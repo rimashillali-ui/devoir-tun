@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -22,6 +23,11 @@ import { Route as NLevelSSubjectSectionRouteImport } from './routes/n.$level.s.$
 import { Route as NLevelFTrackSSubjectRouteImport } from './routes/n.$level.f.$track.s.$subject'
 import { Route as NLevelFTrackSSubjectSectionRouteImport } from './routes/n.$level.f.$track.s.$subject.$section'
 
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/privacy'
     | '/article/$id'
     | '/download/$id'
     | '/n/$level'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/privacy'
     | '/article/$id'
     | '/download/$id'
     | '/n/$level'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/privacy'
     | '/article/$id'
     | '/download/$id'
     | '/n/$level'
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
+  PrivacyRoute: typeof PrivacyRoute
   ArticleIdRoute: typeof ArticleIdRoute
   DownloadIdRoute: typeof DownloadIdRoute
   NLevelRoute: typeof NLevelRouteWithChildren
@@ -184,6 +197,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
+  PrivacyRoute: PrivacyRoute,
   ArticleIdRoute: ArticleIdRoute,
   DownloadIdRoute: DownloadIdRoute,
   NLevelRoute: NLevelRouteWithChildren,
