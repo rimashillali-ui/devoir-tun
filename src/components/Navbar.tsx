@@ -34,6 +34,10 @@ export function Navbar() {
           <span className="bg-gradient-to-r from-cyan to-indigo bg-clip-text text-transparent">{t.site_name}</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm">
+          <Link to="/about" className="hidden md:inline px-2 py-1.5 rounded-md hover:bg-white/5">{t.about}</Link>
+          <Link to="/contact" className="hidden md:inline px-2 py-1.5 rounded-md hover:bg-white/5">{t.contact}</Link>
+          <Link to="/privacy" className="hidden lg:inline px-2 py-1.5 rounded-md hover:bg-white/5">{t.privacy}</Link>
+          <Link to="/terms" className="hidden lg:inline px-2 py-1.5 rounded-md hover:bg-white/5">{t.terms_page}</Link>
           <button
             onClick={toggle}
             className="px-3 py-1.5 rounded-md hover:bg-white/5 flex items-center gap-1.5"
