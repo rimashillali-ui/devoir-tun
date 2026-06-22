@@ -21,6 +21,7 @@ import { Route as NLevelRouteImport } from './routes/n.$level'
 import { Route as DownloadIdRouteImport } from './routes/download.$id'
 import { Route as ArticleIdRouteImport } from './routes/article.$id'
 import { Route as NLevelIndexRouteImport } from './routes/n.$level.index'
+import { Route as ApiAdsTxtRouteImport } from './routes/api/ads.txt'
 import { Route as NLevelSSubjectRouteImport } from './routes/n.$level.s.$subject'
 import { Route as NLevelFTrackRouteImport } from './routes/n.$level.f.$track'
 import { Route as NLevelSSubjectIndexRouteImport } from './routes/n.$level.s.$subject.index'
@@ -90,6 +91,11 @@ const NLevelIndexRoute = NLevelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => NLevelRoute,
 } as any)
+const ApiAdsTxtRoute = ApiAdsTxtRouteImport.update({
+  id: '/api/ads/txt',
+  path: '/api/ads/txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NLevelSSubjectRoute = NLevelSSubjectRouteImport.update({
   id: '/s/$subject',
   path: '/s/$subject',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
+  '/api/ads/txt': typeof ApiAdsTxtRoute
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
   '/preview/$id': typeof PreviewIdRoute
+  '/api/ads/txt': typeof ApiAdsTxtRoute
   '/n/$level': typeof NLevelIndexRoute
   '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
   '/n/$level/f/$track': typeof NLevelFTrackIndexRoute
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
+  '/api/ads/txt': typeof ApiAdsTxtRoute
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
     | '/download/$id'
     | '/n/$level'
     | '/preview/$id'
+    | '/api/ads/txt'
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/article/$id'
     | '/download/$id'
     | '/preview/$id'
+    | '/api/ads/txt'
     | '/n/$level'
     | '/n/$level/s/$subject/$section'
     | '/n/$level/f/$track'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/download/$id'
     | '/n/$level'
     | '/preview/$id'
+    | '/api/ads/txt'
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -273,6 +285,7 @@ export interface RootRouteChildren {
   DownloadIdRoute: typeof DownloadIdRoute
   NLevelRoute: typeof NLevelRouteWithChildren
   PreviewIdRoute: typeof PreviewIdRoute
+  ApiAdsTxtRoute: typeof ApiAdsTxtRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/n/$level/'
       preLoaderRoute: typeof NLevelIndexRouteImport
       parentRoute: typeof NLevelRoute
+    }
+    '/api/ads/txt': {
+      id: '/api/ads/txt'
+      path: '/api/ads/txt'
+      fullPath: '/api/ads/txt'
+      preLoaderRoute: typeof ApiAdsTxtRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/n/$level/s/$subject': {
       id: '/n/$level/s/$subject'
@@ -488,6 +508,7 @@ const rootRouteChildren: RootRouteChildren = {
   DownloadIdRoute: DownloadIdRoute,
   NLevelRoute: NLevelRouteWithChildren,
   PreviewIdRoute: PreviewIdRoute,
+  ApiAdsTxtRoute: ApiAdsTxtRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
