@@ -1,29 +1,66 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useLang } from "@/lib/i18n";
+import { LEVELS, LEVEL_ACCENT } from "@/lib/constants";
+import { GraduationCap, BookOpen, FlaskConical, Calculator, Award } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Devoiratouna — دوفواراتنا" },
+      { name: "description", content: "Cours, exercices, devoirs et examens gratuits pour tous les niveaux." },
+      { property: "og:title", content: "Devoiratouna" },
+      { property: "og:description", content: "Plateforme éducative tunisienne gratuite" },
+      { property: "og:url", content: "/" },
     ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
-  component: Index,
+  component: Home,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+const ICONS: Record<string, any> = {
+  "9eme": BookOpen,
+  "1sec": Calculator,
+  "2sc": FlaskConical,
+  "3eme": GraduationCap,
+  bac: Award,
+};
+
+function Home() {
+  const { t } = useLang();
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="space-y-12">
+      <section className="text-center py-12">
+        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-br from-cyan via-indigo to-emerald bg-clip-text text-transparent">
+          {t.site_name}
+        </h1>
+        <p className="mt-4 text-lg text-muted-foreground">{t.tagline}</p>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold mb-2">{t.levels_title}</h2>
+        <p className="text-muted-foreground mb-6">{t.levels_subtitle}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {LEVELS.map((lv) => {
+            const Icon = ICONS[lv];
+            const accent = LEVEL_ACCENT[lv];
+            return (
+              <Link
+                key={lv}
+                to="/n/$level"
+                params={{ level: lv }}
+                className="glass glass-hover p-6 flex items-center gap-4"
+              >
+                <div className={`p-3 rounded-lg bg-${accent}/10 text-${accent}`}>
+                  <Icon className="h-8 w-8" style={{ color: `var(--accent-${accent})` }} />
+                </div>
+                <div>
+                  <div className="text-xl font-bold">{t.levels[lv]}</div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }
