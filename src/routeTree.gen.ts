@@ -20,10 +20,14 @@ import { Route as PreviewIdRouteImport } from './routes/preview.$id'
 import { Route as NLevelRouteImport } from './routes/n.$level'
 import { Route as DownloadIdRouteImport } from './routes/download.$id'
 import { Route as ArticleIdRouteImport } from './routes/article.$id'
+import { Route as NLevelIndexRouteImport } from './routes/n.$level.index'
 import { Route as NLevelSSubjectRouteImport } from './routes/n.$level.s.$subject'
 import { Route as NLevelFTrackRouteImport } from './routes/n.$level.f.$track'
+import { Route as NLevelSSubjectIndexRouteImport } from './routes/n.$level.s.$subject.index'
+import { Route as NLevelFTrackIndexRouteImport } from './routes/n.$level.f.$track.index'
 import { Route as NLevelSSubjectSectionRouteImport } from './routes/n.$level.s.$subject.$section'
 import { Route as NLevelFTrackSSubjectRouteImport } from './routes/n.$level.f.$track.s.$subject'
+import { Route as NLevelFTrackSSubjectIndexRouteImport } from './routes/n.$level.f.$track.s.$subject.index'
 import { Route as NLevelFTrackSSubjectSectionRouteImport } from './routes/n.$level.f.$track.s.$subject.$section'
 
 const TermsRoute = TermsRouteImport.update({
@@ -81,6 +85,11 @@ const ArticleIdRoute = ArticleIdRouteImport.update({
   path: '/article/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NLevelIndexRoute = NLevelIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => NLevelRoute,
+} as any)
 const NLevelSSubjectRoute = NLevelSSubjectRouteImport.update({
   id: '/s/$subject',
   path: '/s/$subject',
@@ -90,6 +99,16 @@ const NLevelFTrackRoute = NLevelFTrackRouteImport.update({
   id: '/f/$track',
   path: '/f/$track',
   getParentRoute: () => NLevelRoute,
+} as any)
+const NLevelSSubjectIndexRoute = NLevelSSubjectIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => NLevelSSubjectRoute,
+} as any)
+const NLevelFTrackIndexRoute = NLevelFTrackIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => NLevelFTrackRoute,
 } as any)
 const NLevelSSubjectSectionRoute = NLevelSSubjectSectionRouteImport.update({
   id: '/$section',
@@ -101,6 +120,12 @@ const NLevelFTrackSSubjectRoute = NLevelFTrackSSubjectRouteImport.update({
   path: '/s/$subject',
   getParentRoute: () => NLevelFTrackRoute,
 } as any)
+const NLevelFTrackSSubjectIndexRoute =
+  NLevelFTrackSSubjectIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => NLevelFTrackSSubjectRoute,
+  } as any)
 const NLevelFTrackSSubjectSectionRoute =
   NLevelFTrackSSubjectSectionRouteImport.update({
     id: '/$section',
@@ -120,11 +145,15 @@ export interface FileRoutesByFullPath {
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
+  '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
   '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
+  '/n/$level/f/$track/': typeof NLevelFTrackIndexRoute
+  '/n/$level/s/$subject/': typeof NLevelSSubjectIndexRoute
   '/n/$level/f/$track/s/$subject': typeof NLevelFTrackSSubjectRouteWithChildren
   '/n/$level/f/$track/s/$subject/$section': typeof NLevelFTrackSSubjectSectionRoute
+  '/n/$level/f/$track/s/$subject/': typeof NLevelFTrackSSubjectIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -136,13 +165,13 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
-  '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
-  '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
-  '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
+  '/n/$level': typeof NLevelIndexRoute
   '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
-  '/n/$level/f/$track/s/$subject': typeof NLevelFTrackSSubjectRouteWithChildren
+  '/n/$level/f/$track': typeof NLevelFTrackIndexRoute
+  '/n/$level/s/$subject': typeof NLevelSSubjectIndexRoute
   '/n/$level/f/$track/s/$subject/$section': typeof NLevelFTrackSSubjectSectionRoute
+  '/n/$level/f/$track/s/$subject': typeof NLevelFTrackSSubjectIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -157,11 +186,15 @@ export interface FileRoutesById {
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
+  '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
   '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
+  '/n/$level/f/$track/': typeof NLevelFTrackIndexRoute
+  '/n/$level/s/$subject/': typeof NLevelSSubjectIndexRoute
   '/n/$level/f/$track/s/$subject': typeof NLevelFTrackSSubjectRouteWithChildren
   '/n/$level/f/$track/s/$subject/$section': typeof NLevelFTrackSSubjectSectionRoute
+  '/n/$level/f/$track/s/$subject/': typeof NLevelFTrackSSubjectIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -177,11 +210,15 @@ export interface FileRouteTypes {
     | '/download/$id'
     | '/n/$level'
     | '/preview/$id'
+    | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
     | '/n/$level/s/$subject/$section'
+    | '/n/$level/f/$track/'
+    | '/n/$level/s/$subject/'
     | '/n/$level/f/$track/s/$subject'
     | '/n/$level/f/$track/s/$subject/$section'
+    | '/n/$level/f/$track/s/$subject/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -193,13 +230,13 @@ export interface FileRouteTypes {
     | '/terms'
     | '/article/$id'
     | '/download/$id'
-    | '/n/$level'
     | '/preview/$id'
+    | '/n/$level'
+    | '/n/$level/s/$subject/$section'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
-    | '/n/$level/s/$subject/$section'
-    | '/n/$level/f/$track/s/$subject'
     | '/n/$level/f/$track/s/$subject/$section'
+    | '/n/$level/f/$track/s/$subject'
   id:
     | '__root__'
     | '/'
@@ -213,11 +250,15 @@ export interface FileRouteTypes {
     | '/download/$id'
     | '/n/$level'
     | '/preview/$id'
+    | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
     | '/n/$level/s/$subject/$section'
+    | '/n/$level/f/$track/'
+    | '/n/$level/s/$subject/'
     | '/n/$level/f/$track/s/$subject'
     | '/n/$level/f/$track/s/$subject/$section'
+    | '/n/$level/f/$track/s/$subject/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -313,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticleIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/n/$level/': {
+      id: '/n/$level/'
+      path: '/'
+      fullPath: '/n/$level/'
+      preLoaderRoute: typeof NLevelIndexRouteImport
+      parentRoute: typeof NLevelRoute
+    }
     '/n/$level/s/$subject': {
       id: '/n/$level/s/$subject'
       path: '/s/$subject'
@@ -326,6 +374,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/n/$level/f/$track'
       preLoaderRoute: typeof NLevelFTrackRouteImport
       parentRoute: typeof NLevelRoute
+    }
+    '/n/$level/s/$subject/': {
+      id: '/n/$level/s/$subject/'
+      path: '/'
+      fullPath: '/n/$level/s/$subject/'
+      preLoaderRoute: typeof NLevelSSubjectIndexRouteImport
+      parentRoute: typeof NLevelSSubjectRoute
+    }
+    '/n/$level/f/$track/': {
+      id: '/n/$level/f/$track/'
+      path: '/'
+      fullPath: '/n/$level/f/$track/'
+      preLoaderRoute: typeof NLevelFTrackIndexRouteImport
+      parentRoute: typeof NLevelFTrackRoute
     }
     '/n/$level/s/$subject/$section': {
       id: '/n/$level/s/$subject/$section'
@@ -341,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NLevelFTrackSSubjectRouteImport
       parentRoute: typeof NLevelFTrackRoute
     }
+    '/n/$level/f/$track/s/$subject/': {
+      id: '/n/$level/f/$track/s/$subject/'
+      path: '/'
+      fullPath: '/n/$level/f/$track/s/$subject/'
+      preLoaderRoute: typeof NLevelFTrackSSubjectIndexRouteImport
+      parentRoute: typeof NLevelFTrackSSubjectRoute
+    }
     '/n/$level/f/$track/s/$subject/$section': {
       id: '/n/$level/f/$track/s/$subject/$section'
       path: '/$section'
@@ -353,20 +422,24 @@ declare module '@tanstack/react-router' {
 
 interface NLevelFTrackSSubjectRouteChildren {
   NLevelFTrackSSubjectSectionRoute: typeof NLevelFTrackSSubjectSectionRoute
+  NLevelFTrackSSubjectIndexRoute: typeof NLevelFTrackSSubjectIndexRoute
 }
 
 const NLevelFTrackSSubjectRouteChildren: NLevelFTrackSSubjectRouteChildren = {
   NLevelFTrackSSubjectSectionRoute: NLevelFTrackSSubjectSectionRoute,
+  NLevelFTrackSSubjectIndexRoute: NLevelFTrackSSubjectIndexRoute,
 }
 
 const NLevelFTrackSSubjectRouteWithChildren =
   NLevelFTrackSSubjectRoute._addFileChildren(NLevelFTrackSSubjectRouteChildren)
 
 interface NLevelFTrackRouteChildren {
+  NLevelFTrackIndexRoute: typeof NLevelFTrackIndexRoute
   NLevelFTrackSSubjectRoute: typeof NLevelFTrackSSubjectRouteWithChildren
 }
 
 const NLevelFTrackRouteChildren: NLevelFTrackRouteChildren = {
+  NLevelFTrackIndexRoute: NLevelFTrackIndexRoute,
   NLevelFTrackSSubjectRoute: NLevelFTrackSSubjectRouteWithChildren,
 }
 
@@ -376,10 +449,12 @@ const NLevelFTrackRouteWithChildren = NLevelFTrackRoute._addFileChildren(
 
 interface NLevelSSubjectRouteChildren {
   NLevelSSubjectSectionRoute: typeof NLevelSSubjectSectionRoute
+  NLevelSSubjectIndexRoute: typeof NLevelSSubjectIndexRoute
 }
 
 const NLevelSSubjectRouteChildren: NLevelSSubjectRouteChildren = {
   NLevelSSubjectSectionRoute: NLevelSSubjectSectionRoute,
+  NLevelSSubjectIndexRoute: NLevelSSubjectIndexRoute,
 }
 
 const NLevelSSubjectRouteWithChildren = NLevelSSubjectRoute._addFileChildren(
@@ -387,11 +462,13 @@ const NLevelSSubjectRouteWithChildren = NLevelSSubjectRoute._addFileChildren(
 )
 
 interface NLevelRouteChildren {
+  NLevelIndexRoute: typeof NLevelIndexRoute
   NLevelFTrackRoute: typeof NLevelFTrackRouteWithChildren
   NLevelSSubjectRoute: typeof NLevelSSubjectRouteWithChildren
 }
 
 const NLevelRouteChildren: NLevelRouteChildren = {
+  NLevelIndexRoute: NLevelIndexRoute,
   NLevelFTrackRoute: NLevelFTrackRouteWithChildren,
   NLevelSSubjectRoute: NLevelSSubjectRouteWithChildren,
 }
