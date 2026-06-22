@@ -9,38 +9,175 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PreviewIdRouteImport } from './routes/preview.$id'
+import { Route as NLevelRouteImport } from './routes/n.$level'
+import { Route as DownloadIdRouteImport } from './routes/download.$id'
+import { Route as ArticleIdRouteImport } from './routes/article.$id'
+import { Route as NLevelSSubjectRouteImport } from './routes/n.$level.s.$subject'
+import { Route as NLevelFTrackRouteImport } from './routes/n.$level.f.$track'
+import { Route as NLevelSSubjectSectionRouteImport } from './routes/n.$level.s.$subject.$section'
+import { Route as NLevelFTrackSSubjectRouteImport } from './routes/n.$level.f.$track.s.$subject'
+import { Route as NLevelFTrackSSubjectSectionRouteImport } from './routes/n.$level.f.$track.s.$subject.$section'
 
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PreviewIdRoute = PreviewIdRouteImport.update({
+  id: '/preview/$id',
+  path: '/preview/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NLevelRoute = NLevelRouteImport.update({
+  id: '/n/$level',
+  path: '/n/$level',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DownloadIdRoute = DownloadIdRouteImport.update({
+  id: '/download/$id',
+  path: '/download/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArticleIdRoute = ArticleIdRouteImport.update({
+  id: '/article/$id',
+  path: '/article/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NLevelSSubjectRoute = NLevelSSubjectRouteImport.update({
+  id: '/s/$subject',
+  path: '/s/$subject',
+  getParentRoute: () => NLevelRoute,
+} as any)
+const NLevelFTrackRoute = NLevelFTrackRouteImport.update({
+  id: '/f/$track',
+  path: '/f/$track',
+  getParentRoute: () => NLevelRoute,
+} as any)
+const NLevelSSubjectSectionRoute = NLevelSSubjectSectionRouteImport.update({
+  id: '/$section',
+  path: '/$section',
+  getParentRoute: () => NLevelSSubjectRoute,
+} as any)
+const NLevelFTrackSSubjectRoute = NLevelFTrackSSubjectRouteImport.update({
+  id: '/s/$subject',
+  path: '/s/$subject',
+  getParentRoute: () => NLevelFTrackRoute,
+} as any)
+const NLevelFTrackSSubjectSectionRoute =
+  NLevelFTrackSSubjectSectionRouteImport.update({
+    id: '/$section',
+    path: '/$section',
+    getParentRoute: () => NLevelFTrackSSubjectRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/article/$id': typeof ArticleIdRoute
+  '/download/$id': typeof DownloadIdRoute
+  '/n/$level': typeof NLevelRouteWithChildren
+  '/preview/$id': typeof PreviewIdRoute
+  '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
+  '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
+  '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
+  '/n/$level/f/$track/s/$subject': typeof NLevelFTrackSSubjectRouteWithChildren
+  '/n/$level/f/$track/s/$subject/$section': typeof NLevelFTrackSSubjectSectionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/article/$id': typeof ArticleIdRoute
+  '/download/$id': typeof DownloadIdRoute
+  '/n/$level': typeof NLevelRouteWithChildren
+  '/preview/$id': typeof PreviewIdRoute
+  '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
+  '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
+  '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
+  '/n/$level/f/$track/s/$subject': typeof NLevelFTrackSSubjectRouteWithChildren
+  '/n/$level/f/$track/s/$subject/$section': typeof NLevelFTrackSSubjectSectionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/contact': typeof ContactRoute
+  '/article/$id': typeof ArticleIdRoute
+  '/download/$id': typeof DownloadIdRoute
+  '/n/$level': typeof NLevelRouteWithChildren
+  '/preview/$id': typeof PreviewIdRoute
+  '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
+  '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
+  '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
+  '/n/$level/f/$track/s/$subject': typeof NLevelFTrackSSubjectRouteWithChildren
+  '/n/$level/f/$track/s/$subject/$section': typeof NLevelFTrackSSubjectSectionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/contact'
+    | '/article/$id'
+    | '/download/$id'
+    | '/n/$level'
+    | '/preview/$id'
+    | '/n/$level/f/$track'
+    | '/n/$level/s/$subject'
+    | '/n/$level/s/$subject/$section'
+    | '/n/$level/f/$track/s/$subject'
+    | '/n/$level/f/$track/s/$subject/$section'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/contact'
+    | '/article/$id'
+    | '/download/$id'
+    | '/n/$level'
+    | '/preview/$id'
+    | '/n/$level/f/$track'
+    | '/n/$level/s/$subject'
+    | '/n/$level/s/$subject/$section'
+    | '/n/$level/f/$track/s/$subject'
+    | '/n/$level/f/$track/s/$subject/$section'
+  id:
+    | '__root__'
+    | '/'
+    | '/contact'
+    | '/article/$id'
+    | '/download/$id'
+    | '/n/$level'
+    | '/preview/$id'
+    | '/n/$level/f/$track'
+    | '/n/$level/s/$subject'
+    | '/n/$level/s/$subject/$section'
+    | '/n/$level/f/$track/s/$subject'
+    | '/n/$level/f/$track/s/$subject/$section'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ContactRoute: typeof ContactRoute
+  ArticleIdRoute: typeof ArticleIdRoute
+  DownloadIdRoute: typeof DownloadIdRoute
+  NLevelRoute: typeof NLevelRouteWithChildren
+  PreviewIdRoute: typeof PreviewIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +185,128 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/preview/$id': {
+      id: '/preview/$id'
+      path: '/preview/$id'
+      fullPath: '/preview/$id'
+      preLoaderRoute: typeof PreviewIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/n/$level': {
+      id: '/n/$level'
+      path: '/n/$level'
+      fullPath: '/n/$level'
+      preLoaderRoute: typeof NLevelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/download/$id': {
+      id: '/download/$id'
+      path: '/download/$id'
+      fullPath: '/download/$id'
+      preLoaderRoute: typeof DownloadIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/article/$id': {
+      id: '/article/$id'
+      path: '/article/$id'
+      fullPath: '/article/$id'
+      preLoaderRoute: typeof ArticleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/n/$level/s/$subject': {
+      id: '/n/$level/s/$subject'
+      path: '/s/$subject'
+      fullPath: '/n/$level/s/$subject'
+      preLoaderRoute: typeof NLevelSSubjectRouteImport
+      parentRoute: typeof NLevelRoute
+    }
+    '/n/$level/f/$track': {
+      id: '/n/$level/f/$track'
+      path: '/f/$track'
+      fullPath: '/n/$level/f/$track'
+      preLoaderRoute: typeof NLevelFTrackRouteImport
+      parentRoute: typeof NLevelRoute
+    }
+    '/n/$level/s/$subject/$section': {
+      id: '/n/$level/s/$subject/$section'
+      path: '/$section'
+      fullPath: '/n/$level/s/$subject/$section'
+      preLoaderRoute: typeof NLevelSSubjectSectionRouteImport
+      parentRoute: typeof NLevelSSubjectRoute
+    }
+    '/n/$level/f/$track/s/$subject': {
+      id: '/n/$level/f/$track/s/$subject'
+      path: '/s/$subject'
+      fullPath: '/n/$level/f/$track/s/$subject'
+      preLoaderRoute: typeof NLevelFTrackSSubjectRouteImport
+      parentRoute: typeof NLevelFTrackRoute
+    }
+    '/n/$level/f/$track/s/$subject/$section': {
+      id: '/n/$level/f/$track/s/$subject/$section'
+      path: '/$section'
+      fullPath: '/n/$level/f/$track/s/$subject/$section'
+      preLoaderRoute: typeof NLevelFTrackSSubjectSectionRouteImport
+      parentRoute: typeof NLevelFTrackSSubjectRoute
+    }
   }
 }
 
+interface NLevelFTrackSSubjectRouteChildren {
+  NLevelFTrackSSubjectSectionRoute: typeof NLevelFTrackSSubjectSectionRoute
+}
+
+const NLevelFTrackSSubjectRouteChildren: NLevelFTrackSSubjectRouteChildren = {
+  NLevelFTrackSSubjectSectionRoute: NLevelFTrackSSubjectSectionRoute,
+}
+
+const NLevelFTrackSSubjectRouteWithChildren =
+  NLevelFTrackSSubjectRoute._addFileChildren(NLevelFTrackSSubjectRouteChildren)
+
+interface NLevelFTrackRouteChildren {
+  NLevelFTrackSSubjectRoute: typeof NLevelFTrackSSubjectRouteWithChildren
+}
+
+const NLevelFTrackRouteChildren: NLevelFTrackRouteChildren = {
+  NLevelFTrackSSubjectRoute: NLevelFTrackSSubjectRouteWithChildren,
+}
+
+const NLevelFTrackRouteWithChildren = NLevelFTrackRoute._addFileChildren(
+  NLevelFTrackRouteChildren,
+)
+
+interface NLevelSSubjectRouteChildren {
+  NLevelSSubjectSectionRoute: typeof NLevelSSubjectSectionRoute
+}
+
+const NLevelSSubjectRouteChildren: NLevelSSubjectRouteChildren = {
+  NLevelSSubjectSectionRoute: NLevelSSubjectSectionRoute,
+}
+
+const NLevelSSubjectRouteWithChildren = NLevelSSubjectRoute._addFileChildren(
+  NLevelSSubjectRouteChildren,
+)
+
+interface NLevelRouteChildren {
+  NLevelFTrackRoute: typeof NLevelFTrackRouteWithChildren
+  NLevelSSubjectRoute: typeof NLevelSSubjectRouteWithChildren
+}
+
+const NLevelRouteChildren: NLevelRouteChildren = {
+  NLevelFTrackRoute: NLevelFTrackRouteWithChildren,
+  NLevelSSubjectRoute: NLevelSSubjectRouteWithChildren,
+}
+
+const NLevelRouteWithChildren =
+  NLevelRoute._addFileChildren(NLevelRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ContactRoute: ContactRoute,
+  ArticleIdRoute: ArticleIdRoute,
+  DownloadIdRoute: DownloadIdRoute,
+  NLevelRoute: NLevelRouteWithChildren,
+  PreviewIdRoute: PreviewIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
