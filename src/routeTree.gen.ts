@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdsDottxtRouteImport } from './routes/ads[.]txt'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,7 +22,6 @@ import { Route as NLevelRouteImport } from './routes/n.$level'
 import { Route as DownloadIdRouteImport } from './routes/download.$id'
 import { Route as ArticleIdRouteImport } from './routes/article.$id'
 import { Route as NLevelIndexRouteImport } from './routes/n.$level.index'
-import { Route as ApiAdsTxtRouteImport } from './routes/api/ads.txt'
 import { Route as NLevelSSubjectRouteImport } from './routes/n.$level.s.$subject'
 import { Route as NLevelFTrackRouteImport } from './routes/n.$level.f.$track'
 import { Route as NLevelSSubjectIndexRouteImport } from './routes/n.$level.s.$subject.index'
@@ -49,6 +49,11 @@ const ContactRoute = ContactRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdsDottxtRoute = AdsDottxtRouteImport.update({
+  id: '/ads.txt',
+  path: '/ads.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -90,11 +95,6 @@ const NLevelIndexRoute = NLevelIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => NLevelRoute,
-} as any)
-const ApiAdsTxtRoute = ApiAdsTxtRouteImport.update({
-  id: '/api/ads/txt',
-  path: '/api/ads/txt',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const NLevelSSubjectRoute = NLevelSSubjectRouteImport.update({
   id: '/s/$subject',
@@ -143,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/ads.txt': typeof AdsDottxtRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
@@ -151,7 +152,6 @@ export interface FileRoutesByFullPath {
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
-  '/api/ads/txt': typeof ApiAdsTxtRoute
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
@@ -166,6 +166,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/ads.txt': typeof AdsDottxtRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
@@ -173,7 +174,6 @@ export interface FileRoutesByTo {
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
   '/preview/$id': typeof PreviewIdRoute
-  '/api/ads/txt': typeof ApiAdsTxtRoute
   '/n/$level': typeof NLevelIndexRoute
   '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
   '/n/$level/f/$track': typeof NLevelFTrackIndexRoute
@@ -186,6 +186,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/ads.txt': typeof AdsDottxtRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
@@ -194,7 +195,6 @@ export interface FileRoutesById {
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
-  '/api/ads/txt': typeof ApiAdsTxtRoute
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
@@ -211,6 +211,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/ads.txt'
     | '/auth'
     | '/contact'
     | '/privacy'
@@ -219,7 +220,6 @@ export interface FileRouteTypes {
     | '/download/$id'
     | '/n/$level'
     | '/preview/$id'
-    | '/api/ads/txt'
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -234,6 +234,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/ads.txt'
     | '/auth'
     | '/contact'
     | '/privacy'
@@ -241,7 +242,6 @@ export interface FileRouteTypes {
     | '/article/$id'
     | '/download/$id'
     | '/preview/$id'
-    | '/api/ads/txt'
     | '/n/$level'
     | '/n/$level/s/$subject/$section'
     | '/n/$level/f/$track'
@@ -253,6 +253,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/ads.txt'
     | '/auth'
     | '/contact'
     | '/privacy'
@@ -261,7 +262,6 @@ export interface FileRouteTypes {
     | '/download/$id'
     | '/n/$level'
     | '/preview/$id'
-    | '/api/ads/txt'
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -277,6 +277,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
+  AdsDottxtRoute: typeof AdsDottxtRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -285,7 +286,6 @@ export interface RootRouteChildren {
   DownloadIdRoute: typeof DownloadIdRoute
   NLevelRoute: typeof NLevelRouteWithChildren
   PreviewIdRoute: typeof PreviewIdRoute
-  ApiAdsTxtRoute: typeof ApiAdsTxtRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -316,6 +316,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ads.txt': {
+      id: '/ads.txt'
+      path: '/ads.txt'
+      fullPath: '/ads.txt'
+      preLoaderRoute: typeof AdsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -373,13 +380,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/n/$level/'
       preLoaderRoute: typeof NLevelIndexRouteImport
       parentRoute: typeof NLevelRoute
-    }
-    '/api/ads/txt': {
-      id: '/api/ads/txt'
-      path: '/api/ads/txt'
-      fullPath: '/api/ads/txt'
-      preLoaderRoute: typeof ApiAdsTxtRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/n/$level/s/$subject': {
       id: '/n/$level/s/$subject'
@@ -500,6 +500,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
+  AdsDottxtRoute: AdsDottxtRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   PrivacyRoute: PrivacyRoute,
@@ -508,7 +509,6 @@ const rootRouteChildren: RootRouteChildren = {
   DownloadIdRoute: DownloadIdRoute,
   NLevelRoute: NLevelRouteWithChildren,
   PreviewIdRoute: PreviewIdRoute,
-  ApiAdsTxtRoute: ApiAdsTxtRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
