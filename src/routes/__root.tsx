@@ -63,6 +63,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Plateforme éducative tunisienne gratuite — منصة تربوية تونسية مجانية" },
       { property: "og:site_name", content: "Devoiratouna" },
       { property: "og:type", content: "website" },
+      { property: "og:title", content: "Devoiratouna — دوفواراتنا" },
+      { name: "twitter:title", content: "Devoiratouna — دوفواراتنا" },
+      { property: "og:description", content: "Plateforme éducative tunisienne gratuite — منصة تربوية تونسية مجانية" },
+      { name: "twitter:description", content: "Plateforme éducative tunisienne gratuite — منصة تربوية تونسية مجانية" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e695af64-36dc-4d72-aefb-5c0093bc3193/id-preview-b65adea1--a9b510ca-dbc4-4dac-bff0-cf0fceeff967.lovable.app-1782138409238.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e695af64-36dc-4d72-aefb-5c0093bc3193/id-preview-b65adea1--a9b510ca-dbc4-4dac-bff0-cf0fceeff967.lovable.app-1782138409238.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
