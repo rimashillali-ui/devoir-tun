@@ -15,6 +15,7 @@ import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { TopBanner } from "@/components/TopBanner";
+import { CookieBanner } from "@/components/CookieBanner";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -143,6 +144,7 @@ function RootComponent() {
         </main>
         <Footer />
         <Toaster richColors position="top-center" />
+        <CookieBanner />
       </LanguageProvider>
     </QueryClientProvider>
   );
