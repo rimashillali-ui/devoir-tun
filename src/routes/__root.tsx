@@ -80,16 +80,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600;700;800&display=swap",
       },
     ],
-    scripts: [{
-      type: "application/ld+json",
-      children: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "EducationalOrganization",
-        name: "Devoiratouna",
-        url: "/",
-        description: "Plateforme éducative tunisienne gratuite",
-      }),
-    }],
+    scripts: [
+      { src: "/cmp.js", async: true, type: "text/javascript" },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          name: "Devoiratouna",
+          url: "/",
+          description: "Plateforme éducative tunisienne gratuite",
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
