@@ -144,6 +144,7 @@ function RootComponent() {
         </main>
         <Footer />
         <Toaster richColors position="top-center" />
+        <CookieBanner />
       </LanguageProvider>
     </QueryClientProvider>
   );
