@@ -41,13 +41,14 @@ export function SectionContent({
         .eq("level", level).eq("subject", subject).eq("section", section)
         .order("created_at", { ascending: false });
       if (track) q = q.eq("track", track); else q = q.is("track", null);
+      const sortLang = arabicOnly ? "ar" : lang;
       q.then(({ data }) => {
         const list = (data ?? []) as Doc[];
-        list.sort((a, b) => sortKey(a, useLang2).localeCompare(sortKey(b, useLang2), undefined, { numeric: true, sensitivity: "base" }));
+        list.sort((a, b) => sortKey(a, sortLang).localeCompare(sortKey(b, sortLang), undefined, { numeric: true, sensitivity: "base" }));
         setDocs(list);
       });
     }
-  }, [level, track, subject, section, isArticle]);
+  }, [level, track, subject, section, isArticle, arabicOnly, lang]);
 
   const dir = arabicOnly ? "rtl" : undefined;
   const useLang2 = arabicOnly ? "ar" : lang;
