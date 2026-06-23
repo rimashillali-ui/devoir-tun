@@ -13,7 +13,7 @@ const LanguageContext = createContext<Ctx | null>(null);
 const STORAGE_KEY = "devoiratouna-lang";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("ar");
+  const [lang, setLangState] = useState<Lang>("fr");
 
   useEffect(() => {
     try {

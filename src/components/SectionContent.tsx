@@ -41,9 +41,14 @@ export function SectionContent({
         .eq("level", level).eq("subject", subject).eq("section", section)
         .order("created_at", { ascending: false });
       if (track) q = q.eq("track", track); else q = q.is("track", null);
-      q.then(({ data }) => setDocs((data ?? []) as Doc[]));
+      const sortLang = arabicOnly ? "ar" : lang;
+      q.then(({ data }) => {
+        const list = (data ?? []) as Doc[];
+        list.sort((a, b) => sortKey(a, sortLang).localeCompare(sortKey(b, sortLang), undefined, { numeric: true, sensitivity: "base" }));
+        setDocs(list);
+      });
     }
-  }, [level, track, subject, section, isArticle]);
+  }, [level, track, subject, section, isArticle, arabicOnly, lang]);
 
   const dir = arabicOnly ? "rtl" : undefined;
   const useLang2 = arabicOnly ? "ar" : lang;
@@ -57,12 +62,42 @@ export function SectionContent({
         <ArticleList items={articles} lang={useLang2} />
       ) : section === "devoirs" ? (
         <DevoirsTabs docs={docs} subject={subject} lang={useLang2} />
+      ) : section === "cours" || section === "series" ? (
+        <TermTabs docs={docs} lang={useLang2} />
       ) : (
         <DocList docs={docs} lang={useLang2} />
       )}
 
       <AdSlot slot="footer" className="my-4 flex justify-center" />
     </div>
+  );
+}
+
+function sortKey(d: Doc, lang: "ar" | "fr") {
+  return pickTitle(lang, d.title_ar, d.title_fr) ?? "";
+}
+
+function TermTabs({ docs, lang }: { docs: Doc[] | null; lang: "ar" | "fr" }) {
+  const { t } = useLang();
+  if (docs === null) return <p className="text-muted-foreground">{t.loading}</p>;
+  return (
+    <Tabs defaultValue="T1" className="w-full">
+      <TabsList className="grid w-full grid-cols-3 max-w-md">
+        {TERMS.map((tm) => (<TabsTrigger key={tm} value={tm}>{t.terms[tm]}</TabsTrigger>))}
+      </TabsList>
+      {TERMS.map((tm) => {
+        const list = docs.filter((d) => d.term === tm);
+        return (
+          <TabsContent key={tm} value={tm} className="mt-4">
+            {list.length === 0 ? (
+              <p className="text-muted-foreground py-12 text-center">{t.no_content}</p>
+            ) : (
+              <DocList docs={list} lang={lang} />
+            )}
+          </TabsContent>
+        );
+      })}
+    </Tabs>
   );
 }
 
