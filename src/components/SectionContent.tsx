@@ -15,6 +15,7 @@ type Doc = {
   video_url: string | null;
   term: string | null;
   exam_slot: string | null;
+  sort_order?: number | null;
 };
 type Article = { id: string; title_ar: string; title_fr: string | null };
 
@@ -37,14 +38,18 @@ export function SectionContent({
       if (subject) q = q.eq("subject", subject);
       q.then(({ data }) => setArticles((data ?? []) as Article[]));
     } else {
-      let q = supabase.from("documents").select("id,title_ar,title_fr,source_url,video_url,term,exam_slot")
+      let q = supabase.from("documents").select("id,title_ar,title_fr,source_url,video_url,term,exam_slot,sort_order")
         .eq("level", level).eq("subject", subject).eq("section", section)
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
       if (track) q = q.eq("track", track); else q = q.is("track", null);
       const sortLang = arabicOnly ? "ar" : lang;
+      const manualOrder = section === "cours" || section === "series" || section === "texte";
       q.then(({ data }) => {
         const list = (data ?? []) as Doc[];
-        list.sort((a, b) => sortKey(a, sortLang).localeCompare(sortKey(b, sortLang), undefined, { numeric: true, sensitivity: "base" }));
+        if (!manualOrder) {
+          list.sort((a, b) => sortKey(a, sortLang).localeCompare(sortKey(b, sortLang), undefined, { numeric: true, sensitivity: "base" }));
+        }
         setDocs(list);
       });
     }
