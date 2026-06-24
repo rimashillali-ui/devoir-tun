@@ -11,9 +11,39 @@ export const Route = createFileRoute("/article/$id")({
     if (!data) throw notFound();
     return data;
   },
-  head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.title_fr ?? loaderData?.title_ar} — Devoiratouna` }],
-  }),
+  head: ({ params, loaderData }) => {
+    const title = loaderData?.title_fr ?? loaderData?.title_ar ?? "";
+    const url = `https://devoir-tun.lovable.app/article/${params.id}`;
+    return {
+      meta: [
+        { title: `${title} — Devoiratouna` },
+        { property: "og:title", content: title },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: title,
+            description: title,
+            inLanguage: loaderData?.title_fr ? "fr" : "ar",
+            mainEntityOfPage: url,
+            url,
+            author: { "@type": "Organization", name: "Devoiratouna" },
+            publisher: {
+              "@type": "EducationalOrganization",
+              name: "Devoiratouna",
+              url: "https://devoir-tun.lovable.app",
+            },
+          }),
+        },
+      ],
+    };
+  },
   component: ArticlePage,
   errorComponent: () => <p>Erreur</p>,
   notFoundComponent: () => <p>Article introuvable</p>,
