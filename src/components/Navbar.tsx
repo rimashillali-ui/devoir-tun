@@ -15,7 +15,7 @@ export function Navbar() {
       if (!mounted) return;
       setUser(data.user ?? null);
       if (data.user) {
-        const { data: r } = await supabase.rpc("has_role", { _user_id: data.user.id, _role: "admin" });
+        const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
         setIsAdmin(!!r);
       }
     });
