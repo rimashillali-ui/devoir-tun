@@ -80,7 +80,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "preload",
         as: "style",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Tajawal:wght@400;700&family=Cairo:wght@400;700&display=swap",
-        // @ts-expect-error fetchpriority is a valid HTML attribute
         fetchpriority: "high",
       },
       {
