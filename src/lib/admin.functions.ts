@@ -20,6 +20,7 @@ const docSchema = z.object({
   title_fr: z.string().min(1),
   source_url: z.string().url(),
   video_url: z.string().url().nullable().optional(),
+  sort_order: z.number().int().optional(),
 });
 
 export const saveDocument = createServerFn({ method: "POST" })
