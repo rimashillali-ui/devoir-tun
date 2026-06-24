@@ -78,7 +78,7 @@ function AuthPage() {
           <Link to="/admin" className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md">
             {t.admin}
           </Link>
-        ) : hasAnyAdmin === false ? (
+        ) : adminExists === false ? (
           <button disabled={busy} onClick={bootstrap} className="bg-emerald text-background font-bold px-4 py-2 rounded-md">
             {t.promote_me_admin}
           </button>
