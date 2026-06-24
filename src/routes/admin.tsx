@@ -26,7 +26,7 @@ function AdminPage() {
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) { nav({ to: "/auth" }); return; }
-      const { data: r } = await supabase.rpc("has_role", { _user_id: data.user.id, _role: "admin" });
+      const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
       if (!r) { nav({ to: "/auth" }); return; }
       setOk(true); setReady(true);
     })();
