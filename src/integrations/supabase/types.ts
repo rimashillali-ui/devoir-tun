@@ -126,6 +126,7 @@ export type Database = {
           id: string
           level: string
           section: string
+          sort_order: number
           source_url: string
           subject: string
           term: string | null
@@ -141,6 +142,7 @@ export type Database = {
           id?: string
           level: string
           section: string
+          sort_order?: number
           source_url: string
           subject: string
           term?: string | null
@@ -156,6 +158,7 @@ export type Database = {
           id?: string
           level?: string
           section?: string
+          sort_order?: number
           source_url?: string
           subject?: string
           term?: string | null
