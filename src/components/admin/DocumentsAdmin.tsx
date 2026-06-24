@@ -82,6 +82,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
     title_fr: initial.title_fr ?? "",
     source_url: initial.source_url ?? "",
     video_url: initial.video_url ?? "",
+    sort_order: initial.sort_order ?? 0,
   });
   const tracks = getTracks(d.level);
   const subjects = getSubjects(d.level, d.track);
@@ -102,6 +103,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         title_fr: d.title_fr,
         source_url: d.source_url,
         video_url: d.section === "cours" && d.video_url ? d.video_url : null,
+        sort_order: Number(d.sort_order) || 0,
       } });
       toast.success("Enregistré"); onSaved();
     } catch (err: any) { toast.error(err.message); }
