@@ -20,7 +20,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [hasAnyAdmin, setHasAnyAdmin] = useState<boolean | null>(null);
+  const [adminExists, setAdminExists] = useState<boolean | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -30,7 +30,7 @@ function AuthPage() {
         setIsAdmin(!!r);
       }
     });
-    hasAnyAdmin().then((v) => setHasAnyAdmin(v)).catch(() => setHasAnyAdmin(true));
+    hasAnyAdmin().then((v: boolean) => setAdminExists(v)).catch(() => setAdminExists(true));
   }, []);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -53,7 +53,7 @@ function AuthPage() {
       const { data: u } = await supabase.auth.getUser();
       setUser(u.user);
       if (u.user) {
-        const { data: r } = await supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+        const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id).eq("role", "admin").maybeSingle();
         if (r) nav({ to: "/admin" });
       }
     } catch (err: any) {
@@ -64,9 +64,8 @@ function AuthPage() {
   async function bootstrap() {
     setBusy(true);
     try {
-      const { data, error } = await supabase.rpc("bootstrap_admin");
-      if (error) throw error;
-      if (data) { toast.success("Promu administrateur !"); setIsAdmin(true); }
+      const res = await bootstrapAdmin();
+      if (res.ok) { toast.success("Promu administrateur !"); setIsAdmin(true); }
       else toast.error("Un administrateur existe déjà");
     } catch (err: any) { toast.error(err.message); } finally { setBusy(false); }
   }
