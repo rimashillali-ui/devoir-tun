@@ -13,9 +13,40 @@ export const Route = createFileRoute("/download/$id")({
     if (!data) throw notFound();
     return data;
   },
-  head: ({ loaderData }) => ({
-    meta: [{ title: `Téléchargement — ${loaderData?.title_fr ?? loaderData?.title_ar}` }],
-  }),
+  head: ({ params, loaderData }) => {
+    const title = loaderData?.title_fr ?? loaderData?.title_ar ?? "";
+    const url = `https://devoir-tun.lovable.app/download/${params.id}`;
+    return {
+      meta: [
+        { title: `Téléchargement — ${title}` },
+        { name: "description", content: `Téléchargez gratuitement : ${title}` },
+        { property: "og:title", content: title },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LearningResource",
+            name: title,
+            description: `Ressource éducative gratuite : ${title}`,
+            url,
+            inLanguage: ["fr", "ar"],
+            learningResourceType: "Document",
+            isAccessibleForFree: true,
+            provider: {
+              "@type": "EducationalOrganization",
+              name: "Devoiratouna",
+              url: "https://devoir-tun.lovable.app",
+            },
+          }),
+        },
+      ],
+    };
+  },
   component: DownloadPage,
   errorComponent: () => <p>Erreur</p>,
   notFoundComponent: () => <p>Document introuvable</p>,
