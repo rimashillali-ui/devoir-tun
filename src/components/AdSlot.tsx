@@ -30,7 +30,7 @@ export function AdSlot({ slot, className }: { slot: AdSlotName; className?: stri
   if (ad.image_url) {
     return (
       <a href={ad.link_url ?? "#"} target="_blank" rel="noopener noreferrer" className={className}>
-        <img src={ad.image_url} alt="publicité" loading="lazy" className="max-w-full h-auto rounded-md" />
+        <img src={ad.image_url} alt="Annonce publicitaire" loading="lazy" className="max-w-full h-auto rounded-md" />
       </a>
     );
   }

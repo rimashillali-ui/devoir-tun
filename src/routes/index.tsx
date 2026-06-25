@@ -31,7 +31,7 @@ function Home() {
     <div className="space-y-12">
       <section className="text-center py-12">
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-br from-cyan via-indigo to-emerald bg-clip-text text-transparent">
-          {t.site_name}
+          {t.site_name} — {t.site_name === "Devoiratouna" ? "Plateforme éducative tunisienne" : "المنصة التربوية التونسية"}
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">{t.tagline}</p>
       </section>
