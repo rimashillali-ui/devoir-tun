@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useLang } from "@/lib/i18n";
+import { getDownloadUrl } from "@/lib/downloads.functions";
 
 function makeChallenge() {
   const a = Math.floor(Math.random() * 9) + 1;
@@ -7,19 +9,33 @@ function makeChallenge() {
   return { a, b, answer: a + b };
 }
 
-export function DownloadCountdown({ url, seconds }: { url: string; seconds: number }) {
+export function DownloadCountdown({ docId, seconds }: { docId: string; seconds: number }) {
   const { t, lang } = useLang();
+  const fetchUrl = useServerFn(getDownloadUrl);
   const [left, setLeft] = useState(seconds);
   const [verified, setVerified] = useState(false);
   const [challenge, setChallenge] = useState(() => makeChallenge());
   const [value, setValue] = useState("");
   const [error, setError] = useState(false);
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     if (!verified || left <= 0) return;
     const id = setTimeout(() => setLeft((s) => s - 1), 1000);
     return () => clearTimeout(id);
   }, [left, verified]);
+
+  // Récupère l'URL réelle UNIQUEMENT quand captcha validé + compte à rebours terminé
+  useEffect(() => {
+    if (!verified || left > 0 || url || loading) return;
+    setLoading(true);
+    fetchUrl({ data: { id: docId } })
+      .then((res) => setUrl(res.url))
+      .catch(() => setFetchError(true))
+      .finally(() => setLoading(false));
+  }, [verified, left, url, loading, fetchUrl, docId]);
 
   const labels = useMemo(
     () =>
@@ -30,6 +46,8 @@ export function DownloadCountdown({ url, seconds }: { url: string; seconds: numb
             verify: "تحقق",
             wrong: "إجابة خاطئة، حاول مرة أخرى",
             placeholder: "النتيجة",
+            loading: "جاري التحضير…",
+            error: "تعذر تحضير الرابط، حاول مجدداً",
           }
         : {
             title: "Vérifiez que vous n'êtes pas un robot",
@@ -37,6 +55,8 @@ export function DownloadCountdown({ url, seconds }: { url: string; seconds: numb
             verify: "Vérifier",
             wrong: "Réponse incorrecte, réessayez",
             placeholder: "Résultat",
+            loading: "Préparation du lien…",
+            error: "Impossible de préparer le lien, réessayez",
           },
     [lang]
   );
@@ -94,6 +114,15 @@ export function DownloadCountdown({ url, seconds }: { url: string; seconds: numb
       </div>
     );
   }
+
+  if (fetchError) {
+    return <div className="glass p-6 text-center text-destructive">{labels.error}</div>;
+  }
+
+  if (!url) {
+    return <div className="glass p-6 text-center text-muted-foreground">{labels.loading}</div>;
+  }
+
   return (
     <a
       href={url}
