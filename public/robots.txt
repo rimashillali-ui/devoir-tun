@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /auth
+
+Sitemap: https://devoir-tun.lovable.app/sitemap.xml
