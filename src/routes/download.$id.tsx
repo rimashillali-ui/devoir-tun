@@ -2,14 +2,13 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang, pickTitle } from "@/lib/i18n";
-import { toDownloadUrl } from "@/lib/url-helpers";
 import { AdSlot } from "@/components/AdSlot";
 import { DownloadCountdown } from "@/components/DownloadCountdown";
 
 export const Route = createFileRoute("/download/$id")({
   loader: async ({ params }) => {
     const { data } = await supabase.from("documents")
-      .select("id,title_ar,title_fr,source_url").eq("id", params.id).maybeSingle();
+      .select("id,title_ar,title_fr").eq("id", params.id).maybeSingle();
     if (!data) throw notFound();
     return data;
   },
@@ -64,15 +63,13 @@ function DownloadPage() {
       });
   }, []);
 
-  const url = toDownloadUrl(doc.source_url);
-
   return (
     <div className="relative max-w-3xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-center">{pickTitle(lang, doc.title_ar, doc.title_fr)}</h1>
 
       <AdSlot slot="header" className="flex justify-center" />
 
-      <DownloadCountdown url={url} seconds={seconds} />
+      <DownloadCountdown docId={doc.id} seconds={seconds} />
 
       <AdSlot slot="inlist" className="flex justify-center" />
 
