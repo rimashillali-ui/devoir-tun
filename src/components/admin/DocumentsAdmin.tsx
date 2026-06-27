@@ -91,13 +91,14 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     try {
+      const hasTerm = d.section === "devoirs" || d.section === "cours" || d.section === "series";
       await saveDocument({ data: {
         id: d.id,
         level: d.level,
         track: tracks.length ? d.track : null,
         subject: d.subject,
         section: d.section,
-        term: d.section === "devoirs" ? d.term : null,
+        term: hasTerm ? d.term : null,
         exam_slot: d.section === "devoirs" ? d.exam_slot : null,
         title_ar: d.title_ar,
         title_fr: d.title_fr,
