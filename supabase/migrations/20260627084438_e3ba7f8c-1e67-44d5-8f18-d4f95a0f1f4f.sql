@@ -1,0 +1,2 @@
+ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS subtitle_ar text, ADD COLUMN IF NOT EXISTS subtitle_fr text;
+ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS subtitle_ar text, ADD COLUMN IF NOT EXISTS subtitle_fr text;
