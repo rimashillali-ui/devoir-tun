@@ -188,16 +188,31 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
           )}
         </div>
       )}
+      {d.section === "devoirs" && (
+        <button type="button" onClick={autoGenerateTitle}
+          className="inline-flex items-center gap-1 text-xs bg-cyan/20 text-cyan border border-cyan/30 px-3 py-1.5 rounded-md hover:bg-cyan/30">
+          <Wand2 className="h-3.5 w-3.5" /> Générer titres FR / AR auto
+        </button>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className={label}>Titre AR</label>
-          <input className={input} value={d.title_ar} onChange={(e) => setD({ ...d, title_ar: e.target.value })} required />
+          <input className={input} value={d.title_ar} onChange={(e) => setD({ ...d, title_ar: e.target.value })} required dir="rtl" />
         </div>
         <div>
           <label className={label}>Titre FR</label>
           <input className={input} value={d.title_fr} onChange={(e) => setD({ ...d, title_fr: e.target.value })} required />
         </div>
+        <div>
+          <label className={label}>Sous-titre AR (optionnel)</label>
+          <input className={input} value={d.subtitle_ar} onChange={(e) => setD({ ...d, subtitle_ar: e.target.value })} dir="rtl" />
+        </div>
+        <div>
+          <label className={label}>Sous-titre FR (optionnel)</label>
+          <input className={input} value={d.subtitle_fr} onChange={(e) => setD({ ...d, subtitle_fr: e.target.value })} />
+        </div>
       </div>
+
       <div>
         <label className={label}>URL source (GitHub / Drive / OneDrive)</label>
         <input type="url" className={input} value={d.source_url} onChange={(e) => setD({ ...d, source_url: e.target.value })} required />
