@@ -124,6 +124,9 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         exam_slot: d.section === "devoirs" ? d.exam_slot : null,
         title_ar: d.title_ar,
         title_fr: d.title_fr,
+        subtitle_ar: d.subtitle_ar?.trim() || null,
+        subtitle_fr: d.subtitle_fr?.trim() || null,
+
         source_url: d.source_url,
         video_url: d.section === "cours" && d.video_url ? d.video_url : null,
         sort_order: Number(d.sort_order) || 0,
