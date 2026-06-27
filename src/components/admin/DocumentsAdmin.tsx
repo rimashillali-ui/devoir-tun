@@ -91,13 +91,14 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     try {
+      const hasTerm = d.section === "devoirs" || d.section === "cours" || d.section === "series";
       await saveDocument({ data: {
         id: d.id,
         level: d.level,
         track: tracks.length ? d.track : null,
         subject: d.subject,
         section: d.section,
-        term: d.section === "devoirs" ? d.term : null,
+        term: hasTerm ? d.term : null,
         exam_slot: d.section === "devoirs" ? d.exam_slot : null,
         title_ar: d.title_ar,
         title_fr: d.title_fr,
@@ -142,7 +143,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
           </select>
         </div>
       </div>
-      {d.section === "devoirs" && (
+      {(d.section === "devoirs" || d.section === "cours" || d.section === "series") && (
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={label}>Trimestre</label>
@@ -151,13 +152,15 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
               {TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-          <div>
-            <label className={label}>Type</label>
-            <select className={input} value={d.exam_slot ?? ""} onChange={(e) => setD({ ...d, exam_slot: e.target.value })}>
-              <option value="">—</option>
-              {slots.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
+          {d.section === "devoirs" && (
+            <div>
+              <label className={label}>Type</label>
+              <select className={input} value={d.exam_slot ?? ""} onChange={(e) => setD({ ...d, exam_slot: e.target.value })}>
+                <option value="">—</option>
+                {slots.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
