@@ -24,10 +24,13 @@ const docSchema = z.object({
   exam_slot: z.string().nullable().optional(),
   title_ar: z.string().min(1),
   title_fr: z.string().min(1),
+  subtitle_ar: z.string().nullable().optional(),
+  subtitle_fr: z.string().nullable().optional(),
   source_url: z.string().url(),
   video_url: z.string().url().nullable().optional(),
   sort_order: z.number().int().optional(),
 });
+
 
 export const saveDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -64,9 +67,12 @@ const articleSchema = z.object({
   section: z.string(),
   title_ar: z.string().min(1),
   title_fr: z.string().nullable().optional(),
+  subtitle_ar: z.string().nullable().optional(),
+  subtitle_fr: z.string().nullable().optional(),
   content_html_ar: z.string().min(1),
   content_html_fr: z.string().nullable().optional(),
 });
+
 
 export const saveArticle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
