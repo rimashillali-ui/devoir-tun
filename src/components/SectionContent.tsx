@@ -11,13 +11,16 @@ type Doc = {
   id: string;
   title_ar: string;
   title_fr: string;
+  subtitle_ar: string | null;
+  subtitle_fr: string | null;
   source_url: string;
   video_url: string | null;
   term: string | null;
   exam_slot: string | null;
   sort_order?: number | null;
 };
-type Article = { id: string; title_ar: string; title_fr: string | null };
+type Article = { id: string; title_ar: string; title_fr: string | null; subtitle_ar: string | null; subtitle_fr: string | null };
+
 
 export function SectionContent({
   level, track, subject, section,
@@ -31,14 +34,15 @@ export function SectionContent({
 
   useEffect(() => {
     if (isArticle) {
-      let q = supabase.from("articles").select("id,title_ar,title_fr")
+      let q = supabase.from("articles").select("id,title_ar,title_fr,subtitle_ar,subtitle_fr")
         .eq("section", section).order("created_at", { ascending: false });
+
       if (level) q = q.eq("level", level);
       if (track) q = q.eq("track", track); else q = q.is("track", null);
       if (subject) q = q.eq("subject", subject);
       q.then(({ data }) => setArticles((data ?? []) as Article[]));
     } else {
-      let q = supabase.from("documents").select("id,title_ar,title_fr,source_url,video_url,term,exam_slot,sort_order")
+      let q = supabase.from("documents").select("id,title_ar,title_fr,subtitle_ar,subtitle_fr,source_url,video_url,term,exam_slot,sort_order")
         .eq("level", level).eq("subject", subject).eq("section", section)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
@@ -116,9 +120,15 @@ function DocList({ docs, lang }: { docs: Doc[] | null; lang: "ar" | "fr" }) {
         <div key={d.id} className="glass p-5 space-y-3 flex flex-col">
           <div className="flex items-start gap-2">
             <FileText className="h-5 w-5 text-cyan shrink-0 mt-0.5" />
-            <h3 className="font-bold flex-1">{pickTitle(lang, d.title_ar, d.title_fr)}</h3>
+            <div className="flex-1">
+              <h3 className="font-bold">{pickTitle(lang, d.title_ar, d.title_fr)}</h3>
+              {pickTitle(lang, d.subtitle_ar, d.subtitle_fr) && (
+                <p className="text-xs text-muted-foreground mt-1">{pickTitle(lang, d.subtitle_ar, d.subtitle_fr)}</p>
+              )}
+            </div>
             {d.video_url && <Video className="h-4 w-4 text-rose" aria-label="vidéo" />}
           </div>
+
           <Link
             to="/preview/$id"
             params={{ id: d.id }}
@@ -141,8 +151,12 @@ function ArticleList({ items, lang }: { items: Article[] | null; lang: "ar" | "f
       {items.map((a) => (
         <Link key={a.id} to="/article/$id" params={{ id: a.id }} className="glass glass-hover p-5">
           <h3 className="font-bold text-lg">{pickTitle(lang, a.title_ar, a.title_fr)}</h3>
+          {pickTitle(lang, a.subtitle_ar, a.subtitle_fr) && (
+            <p className="text-sm text-muted-foreground mt-1">{pickTitle(lang, a.subtitle_ar, a.subtitle_fr)}</p>
+          )}
         </Link>
       ))}
+
     </div>
   );
 }
