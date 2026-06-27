@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { saveDocument, deleteDocument } from "@/lib/admin.functions";
+import { generateDevoirTitle } from "@/lib/title-generator";
 import { toast } from "sonner";
-import { Trash2, Pencil, Plus, X } from "lucide-react";
+import { Trash2, Pencil, Plus, X, Wand2 } from "lucide-react";
+
 
 type Doc = any;
 
@@ -80,6 +82,8 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
     exam_slot: initial.exam_slot ?? null,
     title_ar: initial.title_ar ?? "",
     title_fr: initial.title_fr ?? "",
+    subtitle_ar: initial.subtitle_ar ?? "",
+    subtitle_fr: initial.subtitle_fr ?? "",
     source_url: initial.source_url ?? "",
     video_url: initial.video_url ?? "",
     sort_order: initial.sort_order ?? 0,
@@ -87,6 +91,24 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   const tracks = getTracks(d.level);
   const subjects = getSubjects(d.level, d.track);
   const slots = d.term ? getExamSlots(d.subject, d.term as Term) : [];
+
+  function autoGenerateTitle() {
+    if (d.section !== "devoirs" || !d.exam_slot) {
+      toast.error("Disponible uniquement pour Devoirs avec un type sélectionné");
+      return;
+    }
+    const t = generateDevoirTitle({
+      level: d.level,
+      track: d.track,
+      subject: d.subject,
+      examSlot: d.exam_slot,
+      sortOrder: Number(d.sort_order) || 1,
+    });
+    if (!t) { toast.error("Impossible de générer"); return; }
+    setD({ ...d, title_fr: t.fr, title_ar: t.ar });
+    toast.success("Titres générés");
+  }
+
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
