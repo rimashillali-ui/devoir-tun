@@ -63,6 +63,8 @@ function ArticleForm({ initial, onClose, onSaved }: { initial: any; onClose: () 
     section: initial.section ?? "conseils",
     title_ar: initial.title_ar ?? "",
     title_fr: initial.title_fr ?? "",
+    subtitle_ar: initial.subtitle_ar ?? "",
+    subtitle_fr: initial.subtitle_fr ?? "",
     content_html_ar: initial.content_html_ar ?? "",
     content_html_fr: initial.content_html_fr ?? "",
   });
@@ -81,12 +83,15 @@ function ArticleForm({ initial, onClose, onSaved }: { initial: any; onClose: () 
         section: a.section,
         title_ar: a.title_ar,
         title_fr: frDisabled ? null : (a.title_fr || null),
+        subtitle_ar: a.subtitle_ar?.trim() || null,
+        subtitle_fr: frDisabled ? null : (a.subtitle_fr?.trim() || null),
         content_html_ar: a.content_html_ar,
         content_html_fr: frDisabled ? null : (a.content_html_fr || null),
       } });
       toast.success("Enregistré"); onSaved();
     } catch (err: any) { toast.error(err.message); }
   }
+
 
   return (
     <form onSubmit={submit} className="glass p-4 space-y-3 relative">
@@ -132,6 +137,17 @@ function ArticleForm({ initial, onClose, onSaved }: { initial: any; onClose: () 
         <label className={label}>Titre FR {frDisabled && "(désactivé pour شرح نص)"}</label>
         <input className={input} value={a.title_fr} onChange={(e) => setA({ ...a, title_fr: e.target.value })} disabled={frDisabled} />
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className={label}>Sous-titre AR (optionnel)</label>
+          <input className={input} value={a.subtitle_ar} onChange={(e) => setA({ ...a, subtitle_ar: e.target.value })} dir="rtl" />
+        </div>
+        <div>
+          <label className={label}>Sous-titre FR (optionnel)</label>
+          <input className={input} value={a.subtitle_fr} onChange={(e) => setA({ ...a, subtitle_fr: e.target.value })} disabled={frDisabled} />
+        </div>
+      </div>
+
       <div>
         <label className={label}>Contenu HTML AR</label>
         <textarea className={input + " font-mono"} rows={10} dir="rtl" value={a.content_html_ar}
