@@ -48,7 +48,8 @@ export function useLang() {
   return ctx;
 }
 
-export function pickTitle(lang: Lang, ar: string, fr?: string | null) {
-  if (lang === "ar") return ar;
-  return fr && fr.trim() ? fr : ar;
+export function pickTitle(lang: Lang, ar?: string | null, fr?: string | null) {
+  if (lang === "ar") return ar ?? "";
+  return fr && fr.trim() ? fr : (ar ?? "");
 }
+

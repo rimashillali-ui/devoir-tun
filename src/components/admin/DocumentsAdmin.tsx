@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { saveDocument, deleteDocument } from "@/lib/admin.functions";
+import { generateDevoirTitle } from "@/lib/title-generator";
 import { toast } from "sonner";
-import { Trash2, Pencil, Plus, X } from "lucide-react";
+import { Trash2, Pencil, Plus, X, Wand2 } from "lucide-react";
+
 
 type Doc = any;
 
@@ -80,6 +82,8 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
     exam_slot: initial.exam_slot ?? null,
     title_ar: initial.title_ar ?? "",
     title_fr: initial.title_fr ?? "",
+    subtitle_ar: initial.subtitle_ar ?? "",
+    subtitle_fr: initial.subtitle_fr ?? "",
     source_url: initial.source_url ?? "",
     video_url: initial.video_url ?? "",
     sort_order: initial.sort_order ?? 0,
@@ -87,6 +91,24 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   const tracks = getTracks(d.level);
   const subjects = getSubjects(d.level, d.track);
   const slots = d.term ? getExamSlots(d.subject, d.term as Term) : [];
+
+  function autoGenerateTitle() {
+    if (d.section !== "devoirs" || !d.exam_slot) {
+      toast.error("Disponible uniquement pour Devoirs avec un type sélectionné");
+      return;
+    }
+    const t = generateDevoirTitle({
+      level: d.level,
+      track: d.track,
+      subject: d.subject,
+      examSlot: d.exam_slot,
+      sortOrder: Number(d.sort_order) || 1,
+    });
+    if (!t) { toast.error("Impossible de générer"); return; }
+    setD({ ...d, title_fr: t.fr, title_ar: t.ar });
+    toast.success("Titres générés");
+  }
+
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -102,6 +124,9 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         exam_slot: d.section === "devoirs" ? d.exam_slot : null,
         title_ar: d.title_ar,
         title_fr: d.title_fr,
+        subtitle_ar: d.subtitle_ar?.trim() || null,
+        subtitle_fr: d.subtitle_fr?.trim() || null,
+
         source_url: d.source_url,
         video_url: d.section === "cours" && d.video_url ? d.video_url : null,
         sort_order: Number(d.sort_order) || 0,
@@ -163,16 +188,31 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
           )}
         </div>
       )}
+      {d.section === "devoirs" && (
+        <button type="button" onClick={autoGenerateTitle}
+          className="inline-flex items-center gap-1 text-xs bg-cyan/20 text-cyan border border-cyan/30 px-3 py-1.5 rounded-md hover:bg-cyan/30">
+          <Wand2 className="h-3.5 w-3.5" /> Générer titres FR / AR auto
+        </button>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className={label}>Titre AR</label>
-          <input className={input} value={d.title_ar} onChange={(e) => setD({ ...d, title_ar: e.target.value })} required />
+          <input className={input} value={d.title_ar} onChange={(e) => setD({ ...d, title_ar: e.target.value })} required dir="rtl" />
         </div>
         <div>
           <label className={label}>Titre FR</label>
           <input className={input} value={d.title_fr} onChange={(e) => setD({ ...d, title_fr: e.target.value })} required />
         </div>
+        <div>
+          <label className={label}>Sous-titre AR (optionnel)</label>
+          <input className={input} value={d.subtitle_ar} onChange={(e) => setD({ ...d, subtitle_ar: e.target.value })} dir="rtl" />
+        </div>
+        <div>
+          <label className={label}>Sous-titre FR (optionnel)</label>
+          <input className={input} value={d.subtitle_fr} onChange={(e) => setD({ ...d, subtitle_fr: e.target.value })} />
+        </div>
       </div>
+
       <div>
         <label className={label}>URL source (GitHub / Drive / OneDrive)</label>
         <input type="url" className={input} value={d.source_url} onChange={(e) => setD({ ...d, source_url: e.target.value })} required />

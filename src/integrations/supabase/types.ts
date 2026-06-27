@@ -56,6 +56,8 @@ export type Database = {
           level: string | null
           section: string
           subject: string | null
+          subtitle_ar: string | null
+          subtitle_fr: string | null
           title_ar: string
           title_fr: string | null
           track: string | null
@@ -69,6 +71,8 @@ export type Database = {
           level?: string | null
           section: string
           subject?: string | null
+          subtitle_ar?: string | null
+          subtitle_fr?: string | null
           title_ar: string
           title_fr?: string | null
           track?: string | null
@@ -82,6 +86,8 @@ export type Database = {
           level?: string | null
           section?: string
           subject?: string | null
+          subtitle_ar?: string | null
+          subtitle_fr?: string | null
           title_ar?: string
           title_fr?: string | null
           track?: string | null
@@ -129,6 +135,8 @@ export type Database = {
           sort_order: number
           source_url: string
           subject: string
+          subtitle_ar: string | null
+          subtitle_fr: string | null
           term: string | null
           title_ar: string
           title_fr: string
@@ -145,6 +153,8 @@ export type Database = {
           sort_order?: number
           source_url: string
           subject: string
+          subtitle_ar?: string | null
+          subtitle_fr?: string | null
           term?: string | null
           title_ar: string
           title_fr: string
@@ -161,6 +171,8 @@ export type Database = {
           sort_order?: number
           source_url?: string
           subject?: string
+          subtitle_ar?: string | null
+          subtitle_fr?: string | null
           term?: string | null
           title_ar?: string
           title_fr?: string
