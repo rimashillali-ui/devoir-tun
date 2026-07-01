@@ -70,7 +70,7 @@ export function SectionContent({
       {isArticle ? (
         <ArticleList items={articles} lang={useLang2} />
       ) : section === "devoirs" ? (
-        <DevoirsTabs docs={docs} subject={subject} lang={useLang2} />
+        <DevoirsTabs docs={docs} subject={subject} level={level} lang={useLang2} />
       ) : section === "cours" || section === "series" ? (
         <TermTabs docs={docs} lang={useLang2} />
       ) : (
