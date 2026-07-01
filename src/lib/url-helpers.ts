@@ -10,19 +10,37 @@ export function toRawUrl(source: string): string {
   return source;
 }
 
+function isSharePoint(url: string) {
+  return /sharepoint\.com/i.test(url);
+}
+function isOneDrive(url: string) {
+  return /1drv\.ms/i.test(url) || /onedrive\.live\.com/i.test(url);
+}
+function withParam(url: string, param: string) {
+  if (url.includes(param.split("=")[0] + "=")) return url;
+  return url.includes("?") ? `${url}&${param}` : `${url}?${param}`;
+}
+
 export function toPreviewUrl(source: string): string {
   if (!source) return source;
   // Google Drive
   const drive = source.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
-  // OneDrive embed
-  if (source.includes("1drv.ms") || source.includes("onedrive.live.com")) {
-    if (source.includes("embed=")) return source;
-    return source.includes("?")
-      ? `${source}&em=2&action=embedview`
-      : `${source}?em=2&action=embedview`;
+  // SharePoint (personal or site share links: /:b:/, /:w:/, /:x:/, /:p:/)
+  if (isSharePoint(source)) {
+    let u = source;
+    u = withParam(u, "action=embedview");
+    u = withParam(u, "web=1");
+    return u;
   }
-  // Default: use Google Docs viewer for raw PDF
+  // OneDrive personal embed
+  if (isOneDrive(source)) {
+    if (source.includes("embed=")) return source;
+    let u = withParam(source, "em=2");
+    u = withParam(u, "action=embedview");
+    return u;
+  }
+  // Default: Google Docs viewer for raw PDF
   const raw = toRawUrl(source);
   return `https://docs.google.com/gview?url=${encodeURIComponent(raw)}&embedded=true`;
 }
@@ -31,6 +49,9 @@ export function toDownloadUrl(source: string): string {
   if (!source) return source;
   const drive = source.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (drive) return `https://drive.google.com/uc?export=download&id=${drive[1]}`;
+  if (isSharePoint(source) || isOneDrive(source)) {
+    return withParam(source, "download=1");
+  }
   return toRawUrl(source);
 }
 
