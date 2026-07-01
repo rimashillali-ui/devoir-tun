@@ -70,7 +70,7 @@ export function SectionContent({
       {isArticle ? (
         <ArticleList items={articles} lang={useLang2} />
       ) : section === "devoirs" ? (
-        <DevoirsTabs docs={docs} subject={subject} lang={useLang2} />
+        <DevoirsTabs docs={docs} subject={subject} level={level} lang={useLang2} />
       ) : section === "cours" || section === "series" ? (
         <TermTabs docs={docs} lang={useLang2} />
       ) : (
@@ -161,7 +161,7 @@ function ArticleList({ items, lang }: { items: Article[] | null; lang: "ar" | "f
   );
 }
 
-function DevoirsTabs({ docs, subject, lang }: { docs: Doc[] | null; subject: string; lang: "ar" | "fr" }) {
+function DevoirsTabs({ docs, subject, level, lang }: { docs: Doc[] | null; subject: string; level: string; lang: "ar" | "fr" }) {
   const { t } = useLang();
   if (docs === null) return <p className="text-muted-foreground">{t.loading}</p>;
   return (
@@ -171,7 +171,7 @@ function DevoirsTabs({ docs, subject, lang }: { docs: Doc[] | null; subject: str
       </TabsList>
       {TERMS.map((tm) => (
         <TabsContent key={tm} value={tm} className="space-y-6 mt-4">
-          {getExamSlots(subject, tm as Term).map((slot) => {
+          {getExamSlots(subject, tm as Term, level).map((slot) => {
             const list = docs.filter((d) => d.term === tm && d.exam_slot === slot);
             return (
               <div key={slot}>

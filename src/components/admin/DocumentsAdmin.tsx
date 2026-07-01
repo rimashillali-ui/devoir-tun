@@ -90,7 +90,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   });
   const tracks = getTracks(d.level);
   const subjects = getSubjects(d.level, d.track);
-  const slots = d.term ? getExamSlots(d.subject, d.term as Term) : [];
+  const slots = d.term ? getExamSlots(d.subject, d.term as Term, d.level) : [];
 
   function autoGenerateTitle() {
     if (d.section !== "devoirs" || !d.exam_slot) {
