@@ -161,7 +161,7 @@ function ArticleList({ items, lang }: { items: Article[] | null; lang: "ar" | "f
   );
 }
 
-function DevoirsTabs({ docs, subject, lang }: { docs: Doc[] | null; subject: string; lang: "ar" | "fr" }) {
+function DevoirsTabs({ docs, subject, level, lang }: { docs: Doc[] | null; subject: string; level: string; lang: "ar" | "fr" }) {
   const { t } = useLang();
   if (docs === null) return <p className="text-muted-foreground">{t.loading}</p>;
   return (
