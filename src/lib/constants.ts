@@ -55,8 +55,14 @@ export const TEXTE_ALLOWED_SUBJECTS = new Set<string>(["arabe", "francais"]);
 export const TERMS = ["T1", "T2", "T3"] as const;
 export type Term = (typeof TERMS)[number];
 
-export function getExamSlots(subject: string, term: Term): string[] {
+export function getExamSlots(subject: string, term: Term, level?: string): string[] {
+  const lowerLevels = level === "9eme" || level === "1sec" || level === "2sc";
   if (subject === "math") {
+    if (lowerLevels) {
+      // 9ème, 1ère, 2ème : deux contrôles + une synthèse par trimestre
+      return term === "T1" ? ["C1", "C2", "S1"] : term === "T2" ? ["C3", "C4", "S2"] : ["C5", "C6", "S3"];
+    }
+    // 3ème et bac : un contrôle + une synthèse par trimestre
     return term === "T1" ? ["C1", "S1"] : term === "T2" ? ["C2", "S2"] : ["C3", "S3"];
   }
   return term === "T1" ? ["C1", "S1"] : term === "T2" ? ["C3", "S2"] : ["C5", "S3"];
