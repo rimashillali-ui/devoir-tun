@@ -171,7 +171,7 @@ function DevoirsTabs({ docs, subject, lang }: { docs: Doc[] | null; subject: str
       </TabsList>
       {TERMS.map((tm) => (
         <TabsContent key={tm} value={tm} className="space-y-6 mt-4">
-          {getExamSlots(subject, tm as Term).map((slot) => {
+          {getExamSlots(subject, tm as Term, level).map((slot) => {
             const list = docs.filter((d) => d.term === tm && d.exam_slot === slot);
             return (
               <div key={slot}>
