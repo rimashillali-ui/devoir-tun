@@ -58,6 +58,20 @@ export const deleteDocument = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const reorderDocuments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { items: { id: string; sort_order: number }[] }) =>
+    z.object({ items: z.array(z.object({ id: z.string().uuid(), sort_order: z.number().int() })).max(500) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    for (const it of data.items) {
+      const { error } = await context.supabase.from("documents").update({ sort_order: it.sort_order }).eq("id", it.id);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
 // ===== Articles =====
 const articleSchema = z.object({
   id: z.string().uuid().optional(),
