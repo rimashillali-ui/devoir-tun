@@ -33,10 +33,18 @@ export function DocumentsAdmin() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => { setCreating(true); setEditing({ section: "cours", level: "9eme", subject: "math" }); }}
-        className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center gap-1">
-        <Plus className="h-4 w-4" /> Nouveau document
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => { setCreating(true); setEditing({ section: "cours", level: "9eme", subject: "math" }); }}
+          className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center gap-1">
+          <Plus className="h-4 w-4" /> Nouveau document
+        </button>
+        <button onClick={() => setShowReorder((v) => !v)}
+          className="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center gap-1">
+          <ArrowUpDown className="h-4 w-4" /> {showReorder ? "Fermer" : "Réorganiser (souris)"}
+        </button>
+      </div>
+
+      {showReorder && <ReorderPanel />}
 
       {(editing || creating) && (
         <DocForm
