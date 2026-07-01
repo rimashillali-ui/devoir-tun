@@ -17,6 +17,7 @@ export function DocumentsAdmin() {
   const [rows, setRows] = useState<Doc[]>([]);
   const [editing, setEditing] = useState<Doc | null>(null);
   const [creating, setCreating] = useState(false);
+  const [showReorder, setShowReorder] = useState(false);
 
   async function load() {
     const { data } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
