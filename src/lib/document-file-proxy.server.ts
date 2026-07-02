@@ -60,6 +60,21 @@ function microsoftCandidates(source: string) {
   }
 }
 
+function microsoftDownloadUrl(source: string) {
+  try {
+    const u = new URL(source);
+    u.searchParams.set("download", "1");
+    return u.toString();
+  } catch {
+    const sep = source.includes("?") ? "&" : "?";
+    return `${source}${sep}download=1`;
+  }
+}
+
+function microsoftPreviewUrl(source: string) {
+  return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(microsoftDownloadUrl(source))}`;
+}
+
 function decodeHtmlEntities(value: string) {
   return value
     .replace(/&amp;/g, "&")
@@ -165,6 +180,10 @@ export async function serveDocumentFile(id: string, mode: FileMode) {
   if (!doc) return new Response("Document introuvable", { status: 404 });
 
   const source = doc.source_url;
+  if (isMicrosoftUrl(source)) {
+    return Response.redirect(mode === "preview" ? microsoftPreviewUrl(source) : microsoftDownloadUrl(source), 302);
+  }
+
   const candidates = isMicrosoftUrl(source) ? microsoftCandidates(source) : [toDownloadUrl(source)];
 
   for (const candidate of candidates) {
