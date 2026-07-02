@@ -16,9 +16,15 @@ function isSharePoint(url: string) {
 function isOneDrive(url: string) {
   return /1drv\.ms/i.test(url) || /onedrive\.live\.com/i.test(url);
 }
-function withParam(url: string, param: string) {
-  if (url.includes(param.split("=")[0] + "=")) return url;
-  return url.includes("?") ? `${url}&${param}` : `${url}?${param}`;
+function setParam(url: string, key: string, value: string) {
+  try {
+    const u = new URL(url);
+    u.searchParams.set(key, value);
+    return u.toString();
+  } catch {
+    const sep = url.includes("?") ? "&" : "?";
+    return `${url}${sep}${key}=${value}`;
+  }
 }
 
 export function toPreviewUrl(source: string): string {
@@ -26,19 +32,12 @@ export function toPreviewUrl(source: string): string {
   // Google Drive
   const drive = source.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
-  // SharePoint (personal or site share links: /:b:/, /:w:/, /:x:/, /:p:/)
-  if (isSharePoint(source)) {
-    let u = source;
-    u = withParam(u, "action=embedview");
-    u = withParam(u, "web=1");
-    return u;
-  }
-  // OneDrive personal embed
-  if (isOneDrive(source)) {
-    if (source.includes("embed=")) return source;
-    let u = withParam(source, "em=2");
-    u = withParam(u, "action=embedview");
-    return u;
+  // SharePoint / OneDrive: use Office Online viewer with the direct-download URL.
+  // SharePoint blocks iframe embedding for anonymous share links, but the
+  // Office viewer can fetch the file when `?download=1` is appended.
+  if (isSharePoint(source) || isOneDrive(source)) {
+    const direct = setParam(source, "download", "1");
+    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(direct)}`;
   }
   // Default: Google Docs viewer for raw PDF
   const raw = toRawUrl(source);
@@ -50,10 +49,11 @@ export function toDownloadUrl(source: string): string {
   const drive = source.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (drive) return `https://drive.google.com/uc?export=download&id=${drive[1]}`;
   if (isSharePoint(source) || isOneDrive(source)) {
-    return withParam(source, "download=1");
+    return setParam(source, "download", "1");
   }
   return toRawUrl(source);
 }
+
 
 export function toYoutubeEmbed(url: string): string | null {
   if (!url) return null;
