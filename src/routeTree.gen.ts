@@ -28,6 +28,8 @@ import { Route as NLevelFTrackRouteImport } from './routes/n.$level.f.$track'
 import { Route as NLevelSSubjectIndexRouteImport } from './routes/n.$level.s.$subject.index'
 import { Route as NLevelFTrackIndexRouteImport } from './routes/n.$level.f.$track.index'
 import { Route as NLevelSSubjectSectionRouteImport } from './routes/n.$level.s.$subject.$section'
+import { Route as ApiPublicDocumentsIdPreviewRouteImport } from './routes/api.public.documents.$id.preview'
+import { Route as ApiPublicDocumentsIdDownloadRouteImport } from './routes/api.public.documents.$id.download'
 import { Route as NLevelFTrackSSubjectRouteImport } from './routes/n.$level.f.$track.s.$subject'
 import { Route as NLevelFTrackSSubjectIndexRouteImport } from './routes/n.$level.f.$track.s.$subject.index'
 import { Route as NLevelFTrackSSubjectSectionRouteImport } from './routes/n.$level.f.$track.s.$subject.$section'
@@ -127,6 +129,18 @@ const NLevelSSubjectSectionRoute = NLevelSSubjectSectionRouteImport.update({
   path: '/$section',
   getParentRoute: () => NLevelSSubjectRoute,
 } as any)
+const ApiPublicDocumentsIdPreviewRoute =
+  ApiPublicDocumentsIdPreviewRouteImport.update({
+    id: '/api/public/documents/$id/preview',
+    path: '/api/public/documents/$id/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicDocumentsIdDownloadRoute =
+  ApiPublicDocumentsIdDownloadRouteImport.update({
+    id: '/api/public/documents/$id/download',
+    path: '/api/public/documents/$id/download',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const NLevelFTrackSSubjectRoute = NLevelFTrackSSubjectRouteImport.update({
   id: '/s/$subject',
   path: '/s/$subject',
@@ -162,6 +176,8 @@ export interface FileRoutesByFullPath {
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
+  '/api/public/documents/$id/download': typeof ApiPublicDocumentsIdDownloadRoute
+  '/api/public/documents/$id/preview': typeof ApiPublicDocumentsIdPreviewRoute
   '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
   '/n/$level/f/$track/': typeof NLevelFTrackIndexRoute
   '/n/$level/s/$subject/': typeof NLevelSSubjectIndexRoute
@@ -183,6 +199,8 @@ export interface FileRoutesByTo {
   '/download/$id': typeof DownloadIdRoute
   '/preview/$id': typeof PreviewIdRoute
   '/n/$level': typeof NLevelIndexRoute
+  '/api/public/documents/$id/download': typeof ApiPublicDocumentsIdDownloadRoute
+  '/api/public/documents/$id/preview': typeof ApiPublicDocumentsIdPreviewRoute
   '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
   '/n/$level/f/$track': typeof NLevelFTrackIndexRoute
   '/n/$level/s/$subject': typeof NLevelSSubjectIndexRoute
@@ -207,6 +225,8 @@ export interface FileRoutesById {
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
+  '/api/public/documents/$id/download': typeof ApiPublicDocumentsIdDownloadRoute
+  '/api/public/documents/$id/preview': typeof ApiPublicDocumentsIdPreviewRoute
   '/n/$level/s/$subject/$section': typeof NLevelSSubjectSectionRoute
   '/n/$level/f/$track/': typeof NLevelFTrackIndexRoute
   '/n/$level/s/$subject/': typeof NLevelSSubjectIndexRoute
@@ -233,6 +253,8 @@ export interface FileRouteTypes {
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
+    | '/api/public/documents/$id/download'
+    | '/api/public/documents/$id/preview'
     | '/n/$level/s/$subject/$section'
     | '/n/$level/f/$track/'
     | '/n/$level/s/$subject/'
@@ -254,6 +276,8 @@ export interface FileRouteTypes {
     | '/download/$id'
     | '/preview/$id'
     | '/n/$level'
+    | '/api/public/documents/$id/download'
+    | '/api/public/documents/$id/preview'
     | '/n/$level/s/$subject/$section'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -277,6 +301,8 @@ export interface FileRouteTypes {
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
+    | '/api/public/documents/$id/download'
+    | '/api/public/documents/$id/preview'
     | '/n/$level/s/$subject/$section'
     | '/n/$level/f/$track/'
     | '/n/$level/s/$subject/'
@@ -299,6 +325,8 @@ export interface RootRouteChildren {
   DownloadIdRoute: typeof DownloadIdRoute
   NLevelRoute: typeof NLevelRouteWithChildren
   PreviewIdRoute: typeof PreviewIdRoute
+  ApiPublicDocumentsIdDownloadRoute: typeof ApiPublicDocumentsIdDownloadRoute
+  ApiPublicDocumentsIdPreviewRoute: typeof ApiPublicDocumentsIdPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -436,6 +464,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NLevelSSubjectSectionRouteImport
       parentRoute: typeof NLevelSSubjectRoute
     }
+    '/api/public/documents/$id/preview': {
+      id: '/api/public/documents/$id/preview'
+      path: '/api/public/documents/$id/preview'
+      fullPath: '/api/public/documents/$id/preview'
+      preLoaderRoute: typeof ApiPublicDocumentsIdPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/documents/$id/download': {
+      id: '/api/public/documents/$id/download'
+      path: '/api/public/documents/$id/download'
+      fullPath: '/api/public/documents/$id/download'
+      preLoaderRoute: typeof ApiPublicDocumentsIdDownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/n/$level/f/$track/s/$subject': {
       id: '/n/$level/f/$track/s/$subject'
       path: '/s/$subject'
@@ -530,6 +572,8 @@ const rootRouteChildren: RootRouteChildren = {
   DownloadIdRoute: DownloadIdRoute,
   NLevelRoute: NLevelRouteWithChildren,
   PreviewIdRoute: PreviewIdRoute,
+  ApiPublicDocumentsIdDownloadRoute: ApiPublicDocumentsIdDownloadRoute,
+  ApiPublicDocumentsIdPreviewRoute: ApiPublicDocumentsIdPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

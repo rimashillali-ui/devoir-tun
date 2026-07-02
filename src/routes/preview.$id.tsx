@@ -1,16 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang, pickTitle } from "@/lib/i18n";
 import { PdfViewer, YoutubeEmbed } from "@/components/Media";
-import { toPreviewUrl, toYoutubeEmbed } from "@/lib/url-helpers";
+import { toYoutubeEmbed } from "@/lib/url-helpers";
 import { AdSlot } from "@/components/AdSlot";
 import { Download, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/preview/$id")({
   loader: async ({ params }) => {
     const { data } = await supabase.from("documents")
-      .select("id,title_ar,title_fr,source_url,video_url").eq("id", params.id).maybeSingle();
+      .select("id,title_ar,title_fr,video_url").eq("id", params.id).maybeSingle();
     if (!data) throw notFound();
     return data;
   },
@@ -25,10 +24,8 @@ export const Route = createFileRoute("/preview/$id")({
 function PreviewPage() {
   const doc = Route.useLoaderData();
   const { lang, t } = useLang();
-  const [previewSrc, setPreviewSrc] = useState<string>("");
   const ytEmbed = doc.video_url ? toYoutubeEmbed(doc.video_url) : null;
-
-  useEffect(() => { setPreviewSrc(toPreviewUrl(doc.source_url)); }, [doc.source_url]);
+  const previewSrc = `/api/public/documents/${encodeURIComponent(doc.id)}/preview`;
 
   return (
     <div className="space-y-4">
