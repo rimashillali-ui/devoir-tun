@@ -2,14 +2,14 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang, pickTitle } from "@/lib/i18n";
 import { PdfViewer, YoutubeEmbed } from "@/components/Media";
-import { toYoutubeEmbed } from "@/lib/url-helpers";
+import { isMicrosoftFileUrl, toYoutubeEmbed } from "@/lib/url-helpers";
 import { AdSlot } from "@/components/AdSlot";
-import { Download, ArrowLeft } from "lucide-react";
+import { Download, ArrowLeft, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/preview/$id")({
   loader: async ({ params }) => {
     const { data } = await supabase.from("documents")
-      .select("id,title_ar,title_fr,video_url").eq("id", params.id).maybeSingle();
+      .select("id,title_ar,title_fr,source_url,video_url").eq("id", params.id).maybeSingle();
     if (!data) throw notFound();
     return data;
   },
@@ -25,6 +25,7 @@ function PreviewPage() {
   const doc = Route.useLoaderData();
   const { lang, t } = useLang();
   const ytEmbed = doc.video_url ? toYoutubeEmbed(doc.video_url) : null;
+  const isMicrosoft = isMicrosoftFileUrl(doc.source_url);
   const previewSrc = `/api/public/documents/${encodeURIComponent(doc.id)}/preview`;
 
   return (
@@ -43,7 +44,20 @@ function PreviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px] gap-4">
         <div className="space-y-4">
           {ytEmbed && <YoutubeEmbed src={ytEmbed} title={doc.title_fr ?? doc.title_ar} />}
-          {previewSrc && <PdfViewer src={previewSrc} title={doc.title_fr ?? doc.title_ar} />}
+          {isMicrosoft ? (
+            <div className="rounded-lg border border-white/10 bg-black/30 min-h-[500px] flex items-center justify-center p-6 text-center">
+              <a
+                href={previewSrc}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-5 py-3 rounded-md hover:opacity-90 transition"
+              >
+                <ExternalLink className="h-4 w-4" /> Ouvrir l’aperçu SharePoint
+              </a>
+            </div>
+          ) : (
+            <PdfViewer src={previewSrc} title={doc.title_fr ?? doc.title_ar} />
+          )}
         </div>
         <aside className="space-y-4 hidden lg:block">
           <AdSlot slot="sidebar_left" />
