@@ -72,7 +72,7 @@ function microsoftDownloadUrl(source: string) {
 }
 
 function microsoftPreviewUrl(source: string) {
-  return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(microsoftDownloadUrl(source))}`;
+  return source;
 }
 
 function decodeHtmlEntities(value: string) {
