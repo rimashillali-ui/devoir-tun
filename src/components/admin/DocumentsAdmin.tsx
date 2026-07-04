@@ -35,7 +35,7 @@ export function DocumentsAdmin() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <button onClick={() => { setCreating(true); setEditing({ section: "cours", level: "9eme", subject: "math" }); }}
           className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center gap-1">
           <Plus className="h-4 w-4" /> Nouveau document
@@ -44,7 +44,15 @@ export function DocumentsAdmin() {
           className="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center gap-1">
           <ArrowUpDown className="h-4 w-4" /> {showReorder ? "Fermer" : "Réorganiser (souris)"}
         </button>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher (titre, matière, niveau, filière, section)…"
+          className="flex-1 min-w-[240px] bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-sm"
+        />
       </div>
+
 
       {showReorder && <ReorderPanel />}
 
