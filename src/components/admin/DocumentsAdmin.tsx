@@ -70,21 +70,31 @@ export function DocumentsAdmin() {
             <tr><th className="p-2 text-start">Niveau</th><th className="p-2 text-start">Filière</th><th className="p-2 text-start">Matière</th><th className="p-2 text-start">Section</th><th className="p-2 text-start">Titre</th><th className="p-2"></th></tr>
           </thead>
           <tbody>
-            {rows.map((d) => (
-              <tr key={d.id} className="border-t border-white/5">
-                <td className="p-2">{d.level}</td>
-                <td className="p-2">{d.track ?? "—"}</td>
-                <td className="p-2">{d.subject}</td>
-                <td className="p-2">{d.section}{d.term ? ` ${d.term}/${d.exam_slot}` : ""}</td>
-                <td className="p-2">{d.title_fr}</td>
-                <td className="p-2 text-end">
-                  <button onClick={() => setEditing(d)} className="p-1 hover:bg-white/10 rounded"><Pencil className="h-4 w-4" /></button>
-                  <button onClick={() => onDelete(d.id)} className="p-1 hover:bg-white/10 rounded text-rose"><Trash2 className="h-4 w-4" /></button>
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Aucun document</td></tr>}
+            {(() => {
+              const q = search.trim().toLowerCase();
+              const filtered = q
+                ? rows.filter((d) => [d.title_fr, d.title_ar, d.subtitle_fr, d.subtitle_ar, d.subject, d.level, d.track, d.section, d.term, d.exam_slot]
+                    .filter(Boolean).some((v: string) => String(v).toLowerCase().includes(q)))
+                : rows;
+              if (filtered.length === 0) {
+                return <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Aucun document</td></tr>;
+              }
+              return filtered.map((d) => (
+                <tr key={d.id} className="border-t border-white/5">
+                  <td className="p-2">{d.level}</td>
+                  <td className="p-2">{d.track ?? "—"}</td>
+                  <td className="p-2">{d.subject}</td>
+                  <td className="p-2">{d.section}{d.term ? ` ${d.term}/${d.exam_slot}` : ""}</td>
+                  <td className="p-2">{d.title_fr}</td>
+                  <td className="p-2 text-end">
+                    <button onClick={() => setEditing(d)} className="p-1 hover:bg-white/10 rounded"><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => onDelete(d.id)} className="p-1 hover:bg-white/10 rounded text-rose"><Trash2 className="h-4 w-4" /></button>
+                  </td>
+                </tr>
+              ));
+            })()}
           </tbody>
+
         </table>
       </div>
     </div>
