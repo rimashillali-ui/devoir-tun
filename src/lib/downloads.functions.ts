@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { toDownloadUrl } from "@/lib/url-helpers";
 
 export const getDownloadUrl = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => {
@@ -19,5 +20,6 @@ export const getDownloadUrl = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .maybeSingle();
     if (error || !doc?.source_url) throw new Error("Document introuvable");
-    return { url: `/api/public/documents/${encodeURIComponent(data.id)}/download` };
+    return { url: toDownloadUrl(doc.source_url) };
   });
+
