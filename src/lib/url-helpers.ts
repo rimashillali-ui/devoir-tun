@@ -10,39 +10,10 @@ export function toRawUrl(source: string): string {
   return source;
 }
 
-export function isSharePoint(url: string) {
-  return /sharepoint\.com/i.test(url);
-}
-export function isOneDrive(url: string) {
-  return /1drv\.ms/i.test(url) || /onedrive\.live\.com/i.test(url);
-}
-export function isMicrosoftFileUrl(url: string) {
-  return isSharePoint(url) || isOneDrive(url);
-}
-function setParam(url: string, key: string, value: string) {
-  try {
-    const u = new URL(url);
-    u.searchParams.set(key, value);
-    return u.toString();
-  } catch {
-    const sep = url.includes("?") ? "&" : "?";
-    return `${url}${sep}${key}=${value}`;
-  }
-}
-
 export function toPreviewUrl(source: string): string {
   if (!source) return source;
-  // Google Drive
   const drive = source.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
-  // SharePoint / OneDrive: use Office Online viewer with the direct-download URL.
-  // SharePoint blocks iframe embedding for anonymous share links, but the
-  // Office viewer can fetch the file when `?download=1` is appended.
-  if (isMicrosoftFileUrl(source)) {
-    const direct = setParam(source, "download", "1");
-    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(direct)}`;
-  }
-  // Default: Google Docs viewer for raw PDF
   const raw = toRawUrl(source);
   return `https://docs.google.com/gview?url=${encodeURIComponent(raw)}&embedded=true`;
 }
@@ -51,9 +22,6 @@ export function toDownloadUrl(source: string): string {
   if (!source) return source;
   const drive = source.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (drive) return `https://drive.google.com/uc?export=download&id=${drive[1]}`;
-  if (isMicrosoftFileUrl(source)) {
-    return setParam(source, "download", "1");
-  }
   return toRawUrl(source);
 }
 

@@ -18,6 +18,8 @@ export function DocumentsAdmin() {
   const [editing, setEditing] = useState<Doc | null>(null);
   const [creating, setCreating] = useState(false);
   const [showReorder, setShowReorder] = useState(false);
+  const [search, setSearch] = useState("");
+
 
   async function load() {
     const { data } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
@@ -33,7 +35,7 @@ export function DocumentsAdmin() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <button onClick={() => { setCreating(true); setEditing({ section: "cours", level: "9eme", subject: "math" }); }}
           className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center gap-1">
           <Plus className="h-4 w-4" /> Nouveau document
@@ -42,7 +44,15 @@ export function DocumentsAdmin() {
           className="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center gap-1">
           <ArrowUpDown className="h-4 w-4" /> {showReorder ? "Fermer" : "Réorganiser (souris)"}
         </button>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher (titre, matière, niveau, filière, section)…"
+          className="flex-1 min-w-[240px] bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-sm"
+        />
       </div>
+
 
       {showReorder && <ReorderPanel />}
 
@@ -60,21 +70,31 @@ export function DocumentsAdmin() {
             <tr><th className="p-2 text-start">Niveau</th><th className="p-2 text-start">Filière</th><th className="p-2 text-start">Matière</th><th className="p-2 text-start">Section</th><th className="p-2 text-start">Titre</th><th className="p-2"></th></tr>
           </thead>
           <tbody>
-            {rows.map((d) => (
-              <tr key={d.id} className="border-t border-white/5">
-                <td className="p-2">{d.level}</td>
-                <td className="p-2">{d.track ?? "—"}</td>
-                <td className="p-2">{d.subject}</td>
-                <td className="p-2">{d.section}{d.term ? ` ${d.term}/${d.exam_slot}` : ""}</td>
-                <td className="p-2">{d.title_fr}</td>
-                <td className="p-2 text-end">
-                  <button onClick={() => setEditing(d)} className="p-1 hover:bg-white/10 rounded"><Pencil className="h-4 w-4" /></button>
-                  <button onClick={() => onDelete(d.id)} className="p-1 hover:bg-white/10 rounded text-rose"><Trash2 className="h-4 w-4" /></button>
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Aucun document</td></tr>}
+            {(() => {
+              const q = search.trim().toLowerCase();
+              const filtered = q
+                ? rows.filter((d) => [d.title_fr, d.title_ar, d.subtitle_fr, d.subtitle_ar, d.subject, d.level, d.track, d.section, d.term, d.exam_slot]
+                    .filter(Boolean).some((v: string) => String(v).toLowerCase().includes(q)))
+                : rows;
+              if (filtered.length === 0) {
+                return <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Aucun document</td></tr>;
+              }
+              return filtered.map((d) => (
+                <tr key={d.id} className="border-t border-white/5">
+                  <td className="p-2">{d.level}</td>
+                  <td className="p-2">{d.track ?? "—"}</td>
+                  <td className="p-2">{d.subject}</td>
+                  <td className="p-2">{d.section}{d.term ? ` ${d.term}/${d.exam_slot}` : ""}</td>
+                  <td className="p-2">{d.title_fr}</td>
+                  <td className="p-2 text-end">
+                    <button onClick={() => setEditing(d)} className="p-1 hover:bg-white/10 rounded"><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => onDelete(d.id)} className="p-1 hover:bg-white/10 rounded text-rose"><Trash2 className="h-4 w-4" /></button>
+                  </td>
+                </tr>
+              ));
+            })()}
           </tbody>
+
         </table>
       </div>
     </div>
