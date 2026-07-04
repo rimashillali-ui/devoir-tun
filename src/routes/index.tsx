@@ -29,8 +29,19 @@ function Home() {
   const { t } = useLang();
   return (
     <div className="space-y-12">
-      <section className="text-center py-12">
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-br from-cyan via-indigo to-emerald bg-clip-text text-transparent">
+      <section className="rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+        <img
+          src="/cover.png"
+          alt="Devoiratouna — دوفواراتنا"
+          className="w-full h-auto block"
+          loading="eager"
+        />
+      </section>
+      <section className="text-center">
+        <div className="flex justify-center mb-4">
+          <img src="/logo.png" alt="Devoiratouna logo" className="h-20 w-20 rounded-full" />
+        </div>
+        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-br from-cyan via-indigo to-emerald bg-clip-text text-transparent">
           {t.site_name} — {t.site_name === "Devoiratouna" ? "Plateforme éducative tunisienne" : "المنصة التربوية التونسية"}
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">{t.tagline}</p>
