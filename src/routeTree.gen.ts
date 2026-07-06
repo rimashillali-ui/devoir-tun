@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdsDottxtRouteImport } from './routes/ads[.]txt'
@@ -22,7 +23,10 @@ import { Route as PreviewIdRouteImport } from './routes/preview.$id'
 import { Route as NLevelRouteImport } from './routes/n.$level'
 import { Route as DownloadIdRouteImport } from './routes/download.$id'
 import { Route as ArticleIdRouteImport } from './routes/article.$id'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as NLevelIndexRouteImport } from './routes/n.$level.index'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as NLevelSSubjectRouteImport } from './routes/n.$level.s.$subject'
 import { Route as NLevelFTrackRouteImport } from './routes/n.$level.f.$track'
 import { Route as NLevelSSubjectIndexRouteImport } from './routes/n.$level.s.$subject.index'
@@ -47,6 +51,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -99,11 +108,29 @@ const ArticleIdRoute = ArticleIdRouteImport.update({
   path: '/article/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const NLevelIndexRoute = NLevelIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => NLevelRoute,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const NLevelSSubjectRoute = NLevelSSubjectRouteImport.update({
   id: '/s/$subject',
   path: '/s/$subject',
@@ -166,13 +193,17 @@ export interface FileRoutesByFullPath {
   '/ads.txt': typeof AdsDottxtRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
@@ -192,12 +223,16 @@ export interface FileRoutesByTo {
   '/ads.txt': typeof AdsDottxtRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
   '/preview/$id': typeof PreviewIdRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/n/$level': typeof NLevelIndexRoute
   '/api/public/documents/$id/download': typeof ApiPublicDocumentsIdDownloadRoute
   '/api/public/documents/$id/preview': typeof ApiPublicDocumentsIdPreviewRoute
@@ -215,13 +250,17 @@ export interface FileRoutesById {
   '/ads.txt': typeof AdsDottxtRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/article/$id': typeof ArticleIdRoute
   '/download/$id': typeof DownloadIdRoute
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
@@ -243,13 +282,17 @@ export interface FileRouteTypes {
     | '/ads.txt'
     | '/auth'
     | '/contact'
+    | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/article/$id'
     | '/download/$id'
     | '/n/$level'
     | '/preview/$id'
+    | '/.mcp/invoke-tool/$tool'
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -269,12 +312,16 @@ export interface FileRouteTypes {
     | '/ads.txt'
     | '/auth'
     | '/contact'
+    | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/article/$id'
     | '/download/$id'
     | '/preview/$id'
+    | '/.mcp/invoke-tool/$tool'
     | '/n/$level'
     | '/api/public/documents/$id/download'
     | '/api/public/documents/$id/preview'
@@ -291,13 +338,17 @@ export interface FileRouteTypes {
     | '/ads.txt'
     | '/auth'
     | '/contact'
+    | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/article/$id'
     | '/download/$id'
     | '/n/$level'
     | '/preview/$id'
+    | '/.mcp/invoke-tool/$tool'
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -318,13 +369,17 @@ export interface RootRouteChildren {
   AdsDottxtRoute: typeof AdsDottxtRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
+  McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ArticleIdRoute: typeof ArticleIdRoute
   DownloadIdRoute: typeof DownloadIdRoute
   NLevelRoute: typeof NLevelRouteWithChildren
   PreviewIdRoute: typeof PreviewIdRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDocumentsIdDownloadRoute: typeof ApiPublicDocumentsIdDownloadRoute
   ApiPublicDocumentsIdPreviewRoute: typeof ApiPublicDocumentsIdPreviewRoute
 }
@@ -350,6 +405,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -422,12 +484,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticleIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/n/$level/': {
       id: '/n/$level/'
       path: '/'
       fullPath: '/n/$level/'
       preLoaderRoute: typeof NLevelIndexRouteImport
       parentRoute: typeof NLevelRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/n/$level/s/$subject': {
       id: '/n/$level/s/$subject'
@@ -565,13 +648,18 @@ const rootRouteChildren: RootRouteChildren = {
   AdsDottxtRoute: AdsDottxtRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
+  McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ArticleIdRoute: ArticleIdRoute,
   DownloadIdRoute: DownloadIdRoute,
   NLevelRoute: NLevelRouteWithChildren,
   PreviewIdRoute: PreviewIdRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDocumentsIdDownloadRoute: ApiPublicDocumentsIdDownloadRoute,
   ApiPublicDocumentsIdPreviewRoute: ApiPublicDocumentsIdPreviewRoute,
 }
