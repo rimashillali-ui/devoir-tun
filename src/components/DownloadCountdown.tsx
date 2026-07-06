@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useLang } from "@/lib/i18n";
 import { getDownloadUrl } from "@/lib/downloads.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 function makeChallenge() {
   const a = Math.floor(Math.random() * 9) + 1;
