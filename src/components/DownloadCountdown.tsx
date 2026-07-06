@@ -14,6 +14,7 @@ export function DownloadCountdown({ docId, seconds }: { docId: string; seconds: 
   const { t, lang } = useLang();
   const fetchUrl = useServerFn(getDownloadUrl);
   const [left, setLeft] = useState(seconds);
+  const [isAuthed, setIsAuthed] = useState(false);
   const [verified, setVerified] = useState(false);
   const [challenge, setChallenge] = useState(() => makeChallenge());
   const [value, setValue] = useState("");
