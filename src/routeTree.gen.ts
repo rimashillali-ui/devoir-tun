@@ -26,6 +26,7 @@ import { Route as ArticleIdRouteImport } from './routes/article.$id'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as NLevelIndexRouteImport } from './routes/n.$level.index'
+import { Route as QuizLevelSubjectRouteImport } from './routes/quiz.$level.$subject'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as NLevelSSubjectRouteImport } from './routes/n.$level.s.$subject'
 import { Route as NLevelFTrackRouteImport } from './routes/n.$level.f.$track'
@@ -125,6 +126,11 @@ const NLevelIndexRoute = NLevelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => NLevelRoute,
 } as any)
+const QuizLevelSubjectRoute = QuizLevelSubjectRouteImport.update({
+  id: '/quiz/$level/$subject',
+  path: '/quiz/$level/$subject',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/quiz/$level/$subject': typeof QuizLevelSubjectRoute
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
@@ -233,6 +240,7 @@ export interface FileRoutesByTo {
   '/download/$id': typeof DownloadIdRoute
   '/preview/$id': typeof PreviewIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/quiz/$level/$subject': typeof QuizLevelSubjectRoute
   '/n/$level': typeof NLevelIndexRoute
   '/api/public/documents/$id/download': typeof ApiPublicDocumentsIdDownloadRoute
   '/api/public/documents/$id/preview': typeof ApiPublicDocumentsIdPreviewRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/n/$level': typeof NLevelRouteWithChildren
   '/preview/$id': typeof PreviewIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/quiz/$level/$subject': typeof QuizLevelSubjectRoute
   '/n/$level/': typeof NLevelIndexRoute
   '/n/$level/f/$track': typeof NLevelFTrackRouteWithChildren
   '/n/$level/s/$subject': typeof NLevelSSubjectRouteWithChildren
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/n/$level'
     | '/preview/$id'
     | '/.mcp/invoke-tool/$tool'
+    | '/quiz/$level/$subject'
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -322,6 +332,7 @@ export interface FileRouteTypes {
     | '/download/$id'
     | '/preview/$id'
     | '/.mcp/invoke-tool/$tool'
+    | '/quiz/$level/$subject'
     | '/n/$level'
     | '/api/public/documents/$id/download'
     | '/api/public/documents/$id/preview'
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/n/$level'
     | '/preview/$id'
     | '/.mcp/invoke-tool/$tool'
+    | '/quiz/$level/$subject'
     | '/n/$level/'
     | '/n/$level/f/$track'
     | '/n/$level/s/$subject'
@@ -380,6 +392,7 @@ export interface RootRouteChildren {
   NLevelRoute: typeof NLevelRouteWithChildren
   PreviewIdRoute: typeof PreviewIdRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  QuizLevelSubjectRoute: typeof QuizLevelSubjectRoute
   ApiPublicDocumentsIdDownloadRoute: typeof ApiPublicDocumentsIdDownloadRoute
   ApiPublicDocumentsIdPreviewRoute: typeof ApiPublicDocumentsIdPreviewRoute
 }
@@ -504,6 +517,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/n/$level/'
       preLoaderRoute: typeof NLevelIndexRouteImport
       parentRoute: typeof NLevelRoute
+    }
+    '/quiz/$level/$subject': {
+      id: '/quiz/$level/$subject'
+      path: '/quiz/$level/$subject'
+      fullPath: '/quiz/$level/$subject'
+      preLoaderRoute: typeof QuizLevelSubjectRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
@@ -660,6 +680,7 @@ const rootRouteChildren: RootRouteChildren = {
   NLevelRoute: NLevelRouteWithChildren,
   PreviewIdRoute: PreviewIdRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  QuizLevelSubjectRoute: QuizLevelSubjectRoute,
   ApiPublicDocumentsIdDownloadRoute: ApiPublicDocumentsIdDownloadRoute,
   ApiPublicDocumentsIdPreviewRoute: ApiPublicDocumentsIdPreviewRoute,
 }
