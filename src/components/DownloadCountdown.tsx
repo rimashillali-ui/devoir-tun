@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useLang } from "@/lib/i18n";
 import { getDownloadUrl } from "@/lib/downloads.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 function makeChallenge() {
   const a = Math.floor(Math.random() * 9) + 1;
@@ -13,6 +14,7 @@ export function DownloadCountdown({ docId, seconds }: { docId: string; seconds: 
   const { t, lang } = useLang();
   const fetchUrl = useServerFn(getDownloadUrl);
   const [left, setLeft] = useState(seconds);
+  const [isAuthed, setIsAuthed] = useState(false);
   const [verified, setVerified] = useState(false);
   const [challenge, setChallenge] = useState(() => makeChallenge());
   const [value, setValue] = useState("");
@@ -21,11 +23,21 @@ export function DownloadCountdown({ docId, seconds }: { docId: string; seconds: 
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(false);
 
+  // Détecte si l'utilisateur est connecté → pas de compte à rebours (captcha uniquement)
   useEffect(() => {
-    if (!verified || left <= 0) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setIsAuthed(true);
+        setLeft(0);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!verified || left <= 0 || isAuthed) return;
     const id = setTimeout(() => setLeft((s) => s - 1), 1000);
     return () => clearTimeout(id);
-  }, [left, verified]);
+  }, [left, verified, isAuthed]);
 
   // Récupère l'URL réelle UNIQUEMENT quand captcha validé + compte à rebours terminé
   useEffect(() => {
