@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "devoiratouna-mcp",
+      "version": "0.1.0",
+      "title": "Devoiratouna"
+    },
+    "tools": [
+      {
+        "name": "search_documents",
+        "title": "Search documents",
+        "description": "Search Devoiratouna's public educational documents (exams, exercises, lessons). Filter by level, subject, track, or free-text query.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free-text query matched against title (fr/ar) and subject."
+            },
+            "level": {
+              "type": "string",
+              "description": "School level slug, e.g. '3eme', '1sec', '2sc'."
+            },
+            "subject": {
+              "type": "string",
+              "description": "Subject slug, e.g. 'math', 'physique'."
+            },
+            "track": {
+              "type": "string",
+              "description": "Track/filière slug, e.g. 'maths', 'sciences'."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_document",
+        "title": "Get document",
+        "description": "Get a single Devoiratouna document by its ID, including preview and download URLs.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Document UUID."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_articles",
+        "title": "Search articles",
+        "description": "Search Devoiratouna's published articles (lessons, guides) by section, subject, level, or free-text query.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free-text query on title (fr/ar)."
+            },
+            "level": {
+              "type": "string"
+            },
+            "subject": {
+              "type": "string"
+            },
+            "section": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
