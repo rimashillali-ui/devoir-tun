@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { Languages, BookOpen, LogIn, LogOut, Shield } from "lucide-react";
+import { UserSidebar } from "@/components/UserSidebar";
 
 export function Navbar() {
   const { t, lang, toggle } = useLang();
@@ -52,6 +53,7 @@ export function Navbar() {
               <span className="hidden sm:inline">{t.admin}</span>
             </Link>
           )}
+          {user && <UserSidebar />}
           {user ? (
             <button
               onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
