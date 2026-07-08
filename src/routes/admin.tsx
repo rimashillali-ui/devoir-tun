@@ -10,6 +10,7 @@ import { PagesAdmin } from "@/components/admin/PagesAdmin";
 import { SettingsAdmin } from "@/components/admin/SettingsAdmin";
 import { RolesAdmin } from "@/components/admin/RolesAdmin";
 import { MessagesAdmin } from "@/components/admin/MessagesAdmin";
+import { QuizAdmin } from "@/components/admin/QuizAdmin";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Devoiratouna" }, { name: "robots", content: "noindex" }] }),
@@ -47,6 +48,7 @@ function AdminPage() {
           <TabsTrigger value="settings">Paramètres</TabsTrigger>
           <TabsTrigger value="roles">Rôles</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="quiz">Quiz</TabsTrigger>
         </TabsList>
         <TabsContent value="documents"><DocumentsAdmin /></TabsContent>
         <TabsContent value="articles"><ArticlesAdmin /></TabsContent>
@@ -54,6 +56,7 @@ function AdminPage() {
         <TabsContent value="pages"><PagesAdmin /></TabsContent>
         <TabsContent value="settings"><SettingsAdmin /></TabsContent>
         <TabsContent value="roles"><RolesAdmin /></TabsContent>
+        <TabsContent value="quiz"><QuizAdmin /></TabsContent>
         <TabsContent value="messages"><MessagesAdmin /></TabsContent>
       </Tabs>
     </div>
