@@ -227,6 +227,45 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_questions: {
+        Row: {
+          choices: Json
+          correct_index: number
+          created_at: string
+          explanation_ar: string | null
+          id: string
+          level: string
+          question_ar: string
+          sort_order: number
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          choices?: Json
+          correct_index?: number
+          created_at?: string
+          explanation_ar?: string | null
+          id?: string
+          level: string
+          question_ar: string
+          sort_order?: number
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          choices?: Json
+          correct_index?: number
+          created_at?: string
+          explanation_ar?: string | null
+          id?: string
+          level?: string
+          question_ar?: string
+          sort_order?: number
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           key: string
