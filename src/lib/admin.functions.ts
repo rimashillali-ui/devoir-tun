@@ -1,16 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
-async function assertAdmin(ctx: { userId: string }) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", ctx.userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error || !data) throw new Error("Forbidden");
+type AdminCtx = { userId: string; supabase: SupabaseClient<Database> };
+
+async function assertAdmin(ctx: AdminCtx) {
+  const { data, error } = await ctx.supabase.rpc("has_role", {
+    _user_id: ctx.userId,
+    _role: "admin",
+  });
+  if (error || data !== true) throw new Error("Forbidden");
 }
 
 // ===== Documents =====
