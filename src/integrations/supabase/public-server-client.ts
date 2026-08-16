@@ -1,0 +1,32 @@
+// Client Supabase côté serveur avec la clé publiable (anon).
+// Aucune clé secrète requise → fonctionne sur Vercel, Cloudflare, Node, etc.
+// À n'utiliser que pour les opérations autorisées par les policies RLS "anon".
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
+
+export function createPublicServerClient() {
+  const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"];
+  const key =
+    process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+
+  if (!url || !key) {
+    throw new Error(
+      "Variables d'environnement manquantes : SUPABASE_URL et SUPABASE_PUBLISHABLE_KEY",
+    );
+  }
+
+  return createClient<Database>(url, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      // Les nouvelles clés sb_* ne sont pas des JWT : n'envoyer que l'en-tête apikey.
+      fetch: (input, init) => {
+        const headers = new Headers(init?.headers);
+        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
+          headers.delete("Authorization");
+        }
+        headers.set("apikey", key);
+        return fetch(input as RequestInfo, { ...init, headers });
+      },
+    },
+  });
+}

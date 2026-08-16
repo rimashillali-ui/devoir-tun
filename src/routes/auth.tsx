@@ -28,10 +28,14 @@ function AuthPage() {
       if (data.user) {
         const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
         setIsAdmin(!!r);
+        // Nécessite une session : on ne l'appelle qu'une fois connecté.
+        hasAnyAdmin().then((v: boolean) => setAdminExists(v)).catch(() => setAdminExists(true));
+      } else {
+        setAdminExists(true);
       }
     });
-    hasAnyAdmin().then((v: boolean) => setAdminExists(v)).catch(() => setAdminExists(true));
   }, []);
+
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
