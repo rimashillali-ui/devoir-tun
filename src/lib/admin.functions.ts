@@ -184,12 +184,14 @@ export const sendContact = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("contact_messages").insert({
+    const { createPublicServerClient } = await import("@/integrations/supabase/public-server-client");
+    const supabasePublic = createPublicServerClient();
+    const { error } = await supabasePublic.from("contact_messages").insert({
       name: data.name,
       email: data.email,
       subject: data.subject ?? null,
       message: data.message,
+      read: false,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -220,18 +222,19 @@ export const markMessageRead = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ===== Roles =====
+// ===== Roles (via fonctions SQL SECURITY DEFINER — aucune clé secrète requise) =====
 export const listAdmins = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id, role, created_at, profiles(email)")
-      .eq("role", "admin");
+    const { data, error } = await context.supabase.rpc("admin_list_admins");
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []).map((r) => ({
+      user_id: r.user_id,
+      role: "admin" as const,
+      created_at: r.created_at,
+      profiles: { email: r.email },
+    }));
   });
 
 export const promoteByEmail = createServerFn({ method: "POST" })
@@ -239,17 +242,7 @@ export const promoteByEmail = createServerFn({ method: "POST" })
   .inputValidator((d: { email: string }) => z.object({ email: z.string().email() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: profile, error: pErr } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
-      .eq("email", data.email)
-      .maybeSingle();
-    if (pErr) throw new Error(pErr.message);
-    if (!profile) throw new Error("Utilisateur introuvable (doit avoir un compte)");
-    const { error } = await supabaseAdmin
-      .from("user_roles")
-      .upsert({ user_id: profile.id, role: "admin" }, { onConflict: "user_id,role" });
+    const { error } = await context.supabase.rpc("admin_promote_by_email", { _email: data.email });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -260,41 +253,26 @@ export const revokeAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     if (data.userId === context.userId) throw new Error("Vous ne pouvez pas vous révoquer vous-même");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("user_roles")
-      .delete()
-      .eq("user_id", data.userId)
-      .eq("role", "admin");
+    const { error } = await context.supabase.rpc("admin_revoke_admin", { _user_id: data.userId });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
-// ===== Admin bootstrap (first admin only) =====
-export const hasAnyAdmin = createServerFn({ method: "GET" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { count, error } = await supabaseAdmin
-    .from("user_roles")
-    .select("user_id", { count: "exact", head: true })
-    .eq("role", "admin");
-  if (error) throw new Error(error.message);
-  return (count ?? 0) > 0;
-});
+// ===== Admin bootstrap (premier admin uniquement) =====
+export const hasAnyAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.rpc("has_any_admin");
+    if (error) throw new Error(error.message);
+    return data === true;
+  });
 
 export const bootstrapAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { count, error: cErr } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id", { count: "exact", head: true })
-      .eq("role", "admin");
-    if (cErr) throw new Error(cErr.message);
-    if ((count ?? 0) > 0) return { ok: false };
-    const { error } = await supabaseAdmin
-      .from("user_roles")
-      .upsert({ user_id: context.userId, role: "admin" }, { onConflict: "user_id,role" });
+    const { data, error } = await context.supabase.rpc("bootstrap_admin");
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: data === true };
   });
+
 
