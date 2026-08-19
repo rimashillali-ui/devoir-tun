@@ -38,7 +38,15 @@ type Level = "9" | "bac";
 
 const STORE = "dt_tutor_chat_v1";
 
+// Normalise les délimiteurs LaTeX \( \) et \[ \] vers $ ... $ / $$ ... $$
+function normalizeMath(text: string) {
+  return text
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_m, x) => `\n$$${x}$$\n`)
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_m, x) => `$${x}$`);
+}
+
 function Bubble({ m }: { m: Msg }) {
+
   const mine = m.role === "user";
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
