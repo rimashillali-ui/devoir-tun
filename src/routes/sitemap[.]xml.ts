@@ -11,7 +11,7 @@ import {
   TEXTE_ALLOWED_SUBJECTS,
 } from "@/lib/constants";
 
-const BASE_URL = "https://devoir-tun.lovable.app";
+const BASE_URL = "https://devoiratona.lovable.app";
 
 interface SitemapEntry {
   path: string;

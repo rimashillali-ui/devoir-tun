@@ -19,7 +19,7 @@ export default defineTool({
     const { data, error } = await supabase.from("documents").select("*").eq("id", id).maybeSingle();
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     if (!data) return { content: [{ type: "text", text: "Document not found" }], isError: true };
-    const site = "https://devoir-tun.lovable.app";
+    const site = "https://devoiratona.lovable.app";
     const enriched = {
       ...data,
       preview_url: `${site}/preview/${data.id}`,
