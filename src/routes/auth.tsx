@@ -67,8 +67,6 @@ function AuthPage() {
         const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
         setIsAdmin(!!r);
         setAdminExists(true);
-      } else {
-        setAdminExists(true);
       }
     });
   }, []);
