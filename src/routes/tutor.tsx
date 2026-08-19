@@ -81,7 +81,23 @@ function TutorPage() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [attachments, setAttachments] = useState<{ name: string; text: string }[]>([]);
+  const [reading, setReading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+
+  async function addFile(file: File) {
+    if (attachments.length >= 3) { toast.error("3 fichiers maximum."); return; }
+    setReading(true);
+    try {
+      const text = await extractTextFromFile(file, 20_000);
+      setAttachments((a) => [...a, { name: file.name, text }]);
+      toast.success(`« ${file.name} » prêt à être analysé`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Impossible de lire ce fichier.");
+    } finally {
+      setReading(false);
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthState(data.user ? "in" : "out"));
