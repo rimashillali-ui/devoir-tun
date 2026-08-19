@@ -95,8 +95,8 @@ function ArticleForm({ initial, onClose, onSaved }: { initial: any; onClose: () 
 
 
   return (
-    <form onSubmit={submit} className="glass p-4 space-y-3 relative">
-      <button type="button" onClick={onClose} className="absolute top-2 end-2 p-1 hover:bg-white/10 rounded"><X className="h-4 w-4" /></button>
+    <AdminModal title={a.id ? "Modifier l'article" : "Nouvel article"} onClose={onClose}>
+    <form onSubmit={submit} className="space-y-3">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div>
           <label className={label}>Section</label>
