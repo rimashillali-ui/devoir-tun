@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { toDownloadUrl } from "@/lib/url-helpers";
+import { toDownloadUrl, toRawUrl, isDirectFileUrl } from "@/lib/url-helpers";
 
 type FileMode = "preview" | "download";
 
