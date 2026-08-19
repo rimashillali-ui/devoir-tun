@@ -71,10 +71,55 @@ export const askTutor = createServerFn({ method: "POST" })
       role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
       content: String(m.content).slice(0, 6000),
     }));
-    return { level: input.level, messages };
+    const attachments = (Array.isArray(input.attachments) ? input.attachments : [])
+      .slice(0, 3)
+      .map((a) => ({
+        name: String(a?.name ?? "fichier").slice(0, 200),
+        text: String(a?.text ?? "").slice(0, MAX_ATTACH_CHARS),
+      }))
+      .filter((a) => a.text.trim().length > 0);
+    return { level: input.level, messages, attachments };
   })
-  .handler(async ({ data }) => {
-    const messages = [{ role: "system" as const, content: systemPrompt(data.level) }, ...data.messages];
+  .handler(async ({ data, context }) => {
+    // Base de cours officiels (gérée depuis le tableau de bord admin), filtrée par niveau
+    let courseBlock = "";
+    const { data: docs, error: docsErr } = await context.supabase
+      .from("tutor_documents")
+      .select("title, subject, content")
+      .eq("level", data.level)
+      .eq("enabled", true)
+      .order("created_at", { ascending: true });
+    if (docsErr) console.error("[tutor] Lecture des cours de référence:", docsErr.message);
+    if (docs?.length) {
+      let total = 0;
+      const parts: string[] = [];
+      for (const d of docs) {
+        const chunk = `### ${d.title}${d.subject ? ` (${d.subject})` : ""}\n${d.content}`;
+        if (total + chunk.length > MAX_COURSE_CHARS) {
+          parts.push(chunk.slice(0, Math.max(0, MAX_COURSE_CHARS - total)));
+          break;
+        }
+        parts.push(chunk);
+        total += chunk.length;
+      }
+      courseBlock =
+        "Voici le cours officiel tunisien de référence pour répondre à l'élève : " +
+        parts.join("\n\n") +
+        "\n\nUtilise EXCLUSIVEMENT ce contenu de référence comme base (notations, méthodes, programme). " +
+        "Si la question sort de ce contenu, dis-le et reste dans le programme officiel du niveau.";
+    }
+
+    const attachBlock = data.attachments.length
+      ? "L'élève a joint le(s) document(s) suivant(s). Appuie-toi dessus pour l'aider (exercice, énoncé, cours personnel) :\n" +
+        data.attachments.map((a) => `--- ${a.name} ---\n${a.text}`).join("\n\n")
+      : "";
+
+    const messages = [
+      { role: "system" as const, content: systemPrompt(data.level) },
+      ...(courseBlock ? [{ role: "system" as const, content: courseBlock }] : []),
+      ...(attachBlock ? [{ role: "system" as const, content: attachBlock }] : []),
+      ...data.messages,
+    ];
 
     const groqKey = process.env["GROQ_API_KEY"];
     const openrouterKey = process.env["OPENROUTER_API_KEY"];
