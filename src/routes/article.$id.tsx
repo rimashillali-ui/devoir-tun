@@ -13,7 +13,7 @@ export const Route = createFileRoute("/article/$id")({
   },
   head: ({ params, loaderData }) => {
     const title = loaderData?.title_fr ?? loaderData?.title_ar ?? "";
-    const url = `https://devoir-tun.lovable.app/article/${params.id}`;
+    const url = `https://devoiratona.lovable.app/article/${params.id}`;
     const description = `${title} — ressource éducative gratuite sur Devoiratouna, plateforme tunisienne de cours et d'exercices.`;
     return {
       meta: [
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/article/$id")({
             publisher: {
               "@type": "EducationalOrganization",
               name: "Devoiratouna",
-              url: "https://devoir-tun.lovable.app",
+              url: "https://devoiratona.lovable.app",
             },
           }),
         },

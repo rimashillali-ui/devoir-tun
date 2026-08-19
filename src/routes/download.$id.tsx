@@ -14,7 +14,7 @@ export const Route = createFileRoute("/download/$id")({
   },
   head: ({ params, loaderData }) => {
     const title = loaderData?.title_fr ?? loaderData?.title_ar ?? "";
-    const url = `https://devoir-tun.lovable.app/download/${params.id}`;
+    const url = `https://devoiratona.lovable.app/download/${params.id}`;
     return {
       meta: [
         { title: `Téléchargement — ${title}` },
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/download/$id")({
             provider: {
               "@type": "EducationalOrganization",
               name: "Devoiratouna",
-              url: "https://devoir-tun.lovable.app",
+              url: "https://devoiratona.lovable.app",
             },
           }),
         },

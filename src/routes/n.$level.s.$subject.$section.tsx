@@ -11,7 +11,7 @@ export const Route = createFileRoute("/n/$level/s/$subject/$section")({
         { name: "description", content: description },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
-        { property: "og:url", content: `https://devoir-tun.lovable.app/n/${params.level}/s/${params.subject}/${params.section}` },
+        { property: "og:url", content: `https://devoiratona.lovable.app/n/${params.level}/s/${params.subject}/${params.section}` },
       ],
       links: [{ rel: "canonical", href: `/n/${params.level}/s/${params.subject}/${params.section}` }],
     };
