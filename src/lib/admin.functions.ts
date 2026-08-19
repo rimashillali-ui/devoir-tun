@@ -222,18 +222,29 @@ export const markMessageRead = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ===== Roles (via fonctions SQL SECURITY DEFINER — aucune clé secrète requise) =====
+// ===== Roles (vérification admin côté serveur, puis écriture privilégiée) =====
 export const listAdmins = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
-    const { data, error } = await context.supabase.rpc("admin_list_admins");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id, created_at")
+      .eq("role", "admin")
+      .order("created_at");
     if (error) throw new Error(error.message);
+    const ids = (data ?? []).map((r) => r.user_id);
+    const emails = new Map<string, string | null>();
+    if (ids.length) {
+      const { data: profs } = await supabaseAdmin.from("profiles").select("id, email").in("id", ids);
+      for (const p of profs ?? []) emails.set(p.id, p.email);
+    }
     return (data ?? []).map((r) => ({
       user_id: r.user_id,
       role: "admin" as const,
       created_at: r.created_at,
-      profiles: { email: r.email },
+      profiles: { email: emails.get(r.user_id) ?? null },
     }));
   });
 
@@ -242,7 +253,17 @@ export const promoteByEmail = createServerFn({ method: "POST" })
   .inputValidator((d: { email: string }) => z.object({ email: z.string().email() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { error } = await context.supabase.rpc("admin_promote_by_email", { _email: data.email });
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: prof, error: pErr } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .ilike("email", data.email)
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    if (!prof) throw new Error("Utilisateur introuvable (doit avoir un compte)");
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: prof.id, role: "admin" }, { onConflict: "user_id,role" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -253,10 +274,16 @@ export const revokeAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     if (data.userId === context.userId) throw new Error("Vous ne pouvez pas vous révoquer vous-même");
-    const { error } = await context.supabase.rpc("admin_revoke_admin", { _user_id: data.userId });
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("role", "admin");
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
 
 
 
