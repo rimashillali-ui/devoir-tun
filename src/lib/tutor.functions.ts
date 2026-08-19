@@ -71,25 +71,24 @@ export const askTutor = createServerFn({ method: "POST" })
     const groqKey = process.env["GROQ_API_KEY"];
     const openrouterKey = process.env["OPENROUTER_API_KEY"];
 
-    // Tentative 1 : Groq
+    // Tentative 1 : Groq (modèle demandé, puis modèle Groq de repli s'il est décommissionné)
+    const groqModels = ["deepseek-r1-distill-llama-70b", "openai/gpt-oss-120b"];
     if (groqKey) {
-      try {
-        const content = await callOpenAICompatible({
-          url: "https://api.groq.com/openai/v1/chat/completions",
-          key: groqKey,
-          model: "deepseek-r1-distill-llama-70b",
-          body: {
-            model: "deepseek-r1-distill-llama-70b",
-            messages,
-            temperature: 0.4,
-            max_tokens: 2048,
-          },
-        });
-        return { content, provider: "groq" as const, fellBack: false };
-      } catch (err) {
-        console.error("[tutor] Groq indisponible, bascule OpenRouter:", (err as Error).message);
+      for (const model of groqModels) {
+        try {
+          const content = await callOpenAICompatible({
+            url: "https://api.groq.com/openai/v1/chat/completions",
+            key: groqKey,
+            model,
+            body: { model, messages, temperature: 0.4, max_tokens: 2048 },
+          });
+          return { content, provider: "groq" as const, fellBack: false };
+        } catch (err) {
+          console.error(`[tutor] Groq (${model}) indisponible:`, (err as Error).message);
+        }
       }
     }
+
 
     // Tentative 2 : secours automatique OpenRouter (même historique)
     if (!openrouterKey) throw new Error("Service IA indisponible pour le moment. Réessayez dans un instant.");
