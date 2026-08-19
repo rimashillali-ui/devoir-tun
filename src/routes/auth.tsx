@@ -38,6 +38,17 @@ function ProviderButton({ label, onClick, children }: { label: string; onClick: 
   );
 }
 
+function frError(err: any) {
+  const m = String(err?.message ?? "");
+  if (/Invalid login credentials/i.test(m)) return "E-mail ou mot de passe incorrect. Utilisez « Mot de passe oublié ? » ou la connexion par code.";
+  if (/Email not confirmed/i.test(m)) return "Votre e-mail n'est pas encore confirmé. Demandez un code de connexion.";
+  if (/User already registered/i.test(m)) return "Un compte existe déjà avec cet e-mail. Connectez-vous.";
+  if (/rate limit|Too many|429/i.test(m)) return "Trop de tentatives. Réessayez dans quelques minutes.";
+  if (/Token has expired|Invalid token|otp_expired/i.test(m)) return "Code invalide ou expiré. Demandez un nouveau code.";
+  if (/Password should be/i.test(m)) return "Le mot de passe doit contenir au moins 6 caractères.";
+  return m || "Une erreur est survenue.";
+}
+
 function AuthPage() {
   const { t } = useLang();
   const nav = useNavigate();
@@ -49,6 +60,7 @@ function AuthPage() {
   const [adminExists, setAdminExists] = useState<boolean | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  const [otpType, setOtpType] = useState<"signup" | "email">("signup");
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -93,6 +105,7 @@ function AuthPage() {
           email, password, options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
+        setOtpType("signup");
         setPendingEmail(email);
         toast.success("Code de confirmation envoyé par e-mail");
       } else {
@@ -101,7 +114,7 @@ function AuthPage() {
         await afterSignedIn();
       }
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(frError(err));
     } finally { setBusy(false); }
   }
 
@@ -110,21 +123,37 @@ function AuthPage() {
     if (!pendingEmail) return;
     setBusy(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email: pendingEmail, token: code.trim(), type: "signup" });
+      const { error } = await supabase.auth.verifyOtp({ email: pendingEmail, token: code.trim(), type: otpType });
       if (error) throw error;
       toast.success("Compte confirmé !");
       setPendingEmail(null);
       await afterSignedIn();
-    } catch (err: any) { toast.error(err.message); } finally { setBusy(false); }
+    } catch (err: any) { toast.error(frError(err)); } finally { setBusy(false); }
   }
 
   async function resendCode() {
     if (!pendingEmail) return;
     try {
-      const { error } = await supabase.auth.resend({ type: "signup", email: pendingEmail });
+      const { error } = otpType === "signup"
+        ? await supabase.auth.resend({ type: "signup", email: pendingEmail })
+        : await supabase.auth.signInWithOtp({ email: pendingEmail, options: { shouldCreateUser: false } });
       if (error) throw error;
       toast.success("Nouveau code envoyé");
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: any) { toast.error(frError(err)); }
+  }
+
+  async function loginWithCode() {
+    const form = document.getElementById("email") as HTMLInputElement | null;
+    const email = (form?.value || "").trim();
+    if (!email) { toast.error("Saisissez d'abord votre adresse e-mail."); return; }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+      if (error) throw error;
+      setOtpType("email");
+      setPendingEmail(email);
+      toast.success("Code de connexion envoyé par e-mail");
+    } catch (err: any) { toast.error(frError(err)); } finally { setBusy(false); }
   }
 
   async function forgotPassword() {
@@ -136,7 +165,7 @@ function AuthPage() {
       });
       if (error) throw error;
       toast.success("E-mail de réinitialisation envoyé");
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: any) { toast.error(frError(err)); }
   }
 
   async function bootstrap() {
@@ -145,7 +174,7 @@ function AuthPage() {
       const res = await bootstrapAdmin();
       if (res.ok) { toast.success("Promu administrateur !"); setIsAdmin(true); }
       else toast.error("Un administrateur existe déjà");
-    } catch (err: any) { toast.error(err.message); } finally { setBusy(false); }
+    } catch (err: any) { toast.error(frError(err)); } finally { setBusy(false); }
   }
 
   return (
@@ -262,6 +291,12 @@ function AuthPage() {
                 <button disabled={busy} className="w-full bg-cyan text-background font-bold py-2.5 rounded-lg disabled:opacity-50">
                   {busy ? "..." : tab === "signin" ? t.signin : t.signup}
                 </button>
+                {tab === "signin" && (
+                  <button type="button" disabled={busy} onClick={loginWithCode}
+                    className="w-full text-xs text-cyan hover:underline disabled:opacity-50">
+                    Se connecter avec un code envoyé par e-mail
+                  </button>
+                )}
               </form>
             </div>
           </>

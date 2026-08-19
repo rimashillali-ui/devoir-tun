@@ -1,7 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang, pickTitle } from "@/lib/i18n";
-import { PdfViewer, YoutubeEmbed } from "@/components/Media";
+import { YoutubeEmbed } from "@/components/Media";
+import { PdfCanvasViewer } from "@/components/PdfCanvasViewer";
 import { toYoutubeEmbed } from "@/lib/url-helpers";
 import { AdSlot } from "@/components/AdSlot";
 import { Download, ArrowLeft } from "lucide-react";
@@ -44,7 +45,7 @@ function PreviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px] gap-4">
         <div className="space-y-4">
           {ytEmbed && <YoutubeEmbed src={ytEmbed} title={doc.title_fr ?? doc.title_ar} />}
-          <PdfViewer src={previewSrc} title={doc.title_fr ?? doc.title_ar} />
+          <PdfCanvasViewer src={previewSrc} title={doc.title_fr ?? doc.title_ar} />
         </div>
         <aside className="space-y-4 hidden lg:block">
           <AdSlot slot="sidebar_left" />
