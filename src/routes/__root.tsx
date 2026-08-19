@@ -60,10 +60,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "google-site-verification", content: "HHhtTw_KjZYqbZJPd6wpiwwEj_MOPnsCHDD0bs-RpA8" },
       { property: "og:site_name", content: "Devoiratouna" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://devoir-tun.lovable.app/cover.png" },
-      { name: "twitter:image", content: "https://devoir-tun.lovable.app/cover.png" },
+      { property: "og:image", content: "https://devoiratona.lovable.app/cover.png" },
+      { name: "twitter:image", content: "https://devoiratona.lovable.app/cover.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
