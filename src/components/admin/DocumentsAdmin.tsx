@@ -4,8 +4,9 @@ import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Ter
 import { saveDocument, deleteDocument } from "@/lib/admin.functions";
 import { generateDevoirTitle } from "@/lib/title-generator";
 import { toast } from "sonner";
-import { Trash2, Pencil, Plus, X, Wand2, ArrowUpDown } from "lucide-react";
+import { Trash2, Pencil, Plus, Wand2, ArrowUpDown } from "lucide-react";
 import { ReorderPanel } from "./ReorderPanel";
+import { AdminModal } from "./AdminModal";
 
 
 type Doc = any;
