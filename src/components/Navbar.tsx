@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { Languages, BookOpen, LogIn, LogOut, Shield } from "lucide-react";
+import { Languages, BookOpen, LogIn, LogOut, Shield, Sparkles } from "lucide-react";
 import { UserSidebar } from "@/components/UserSidebar";
 
 export function Navbar() {
@@ -35,7 +35,12 @@ export function Navbar() {
           <span className="bg-gradient-to-r from-cyan to-indigo bg-clip-text text-transparent">{t.site_name}</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm">
+          <Link to="/tutor" className="px-2 py-1.5 rounded-md hover:bg-white/5 flex items-center gap-1.5 text-cyan">
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">Tuteur IA</span>
+          </Link>
           <Link to="/about" className="hidden md:inline px-2 py-1.5 rounded-md hover:bg-white/5">{t.about}</Link>
+
           <Link to="/contact" className="hidden md:inline px-2 py-1.5 rounded-md hover:bg-white/5">{t.contact}</Link>
           <Link to="/privacy" className="hidden lg:inline px-2 py-1.5 rounded-md hover:bg-white/5">{t.privacy}</Link>
           <Link to="/terms" className="hidden lg:inline px-2 py-1.5 rounded-md hover:bg-white/5">{t.terms_page}</Link>
