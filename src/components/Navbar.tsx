@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { Languages, BookOpen, LogIn, LogOut, Shield } from "lucide-react";
+import { Languages, BookOpen, LogIn, LogOut, Shield, Sparkles } from "lucide-react";
 import { UserSidebar } from "@/components/UserSidebar";
 
 export function Navbar() {
