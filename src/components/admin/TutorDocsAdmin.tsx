@@ -156,7 +156,6 @@ export function TutorDocsAdmin() {
           onClose={() => setEditing(null)}
           title={editing.id ? "Modifier le cours de référence" : "Nouveau cours de référence"}
         >
-          (
           <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <select
