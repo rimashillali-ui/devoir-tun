@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useLang } from "@/lib/i18n";
 import { toast } from "sonner";
-import { bootstrapAdmin, hasAnyAdmin } from "@/lib/admin.functions";
 import { BookOpen, Mail, Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -57,7 +56,6 @@ function AuthPage() {
   const [showPass, setShowPass] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminExists, setAdminExists] = useState<boolean | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [otpType, setOtpType] = useState<"signup" | "email">("signup");
@@ -68,9 +66,6 @@ function AuthPage() {
       if (data.user) {
         const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
         setIsAdmin(!!r);
-        hasAnyAdmin().then((v: boolean) => setAdminExists(v)).catch(() => setAdminExists(true));
-      } else {
-        setAdminExists(true);
       }
     });
   }, []);
@@ -168,15 +163,6 @@ function AuthPage() {
     } catch (err: any) { toast.error(frError(err)); }
   }
 
-  async function bootstrap() {
-    setBusy(true);
-    try {
-      const res = await bootstrapAdmin();
-      if (res.ok) { toast.success("Promu administrateur !"); setIsAdmin(true); }
-      else toast.error("Un administrateur existe déjà");
-    } catch (err: any) { toast.error(frError(err)); } finally { setBusy(false); }
-  }
-
   return (
     <div className="grid lg:grid-cols-2 gap-8 items-center min-h-[70vh]">
       <aside className="hidden lg:flex flex-col items-center text-center gap-4">
@@ -195,10 +181,6 @@ function AuthPage() {
             <p>Connecté en tant que <strong>{user.email}</strong></p>
             {isAdmin ? (
               <Link to="/admin" className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md">{t.admin}</Link>
-            ) : adminExists === false ? (
-              <button disabled={busy} onClick={bootstrap} className="bg-emerald text-background font-bold px-4 py-2 rounded-md">
-                {t.promote_me_admin}
-              </button>
             ) : (
               <p className="text-muted-foreground text-sm">Vous n'avez pas les droits administrateur.</p>
             )}
