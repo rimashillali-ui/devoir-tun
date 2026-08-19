@@ -11,6 +11,7 @@ import { SettingsAdmin } from "@/components/admin/SettingsAdmin";
 import { RolesAdmin } from "@/components/admin/RolesAdmin";
 import { MessagesAdmin } from "@/components/admin/MessagesAdmin";
 import { QuizAdmin } from "@/components/admin/QuizAdmin";
+import { TutorDocsAdmin } from "@/components/admin/TutorDocsAdmin";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Devoiratouna" }, { name: "robots", content: "noindex" }] }),
