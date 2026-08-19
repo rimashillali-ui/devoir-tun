@@ -42,7 +42,7 @@ export function SectionContent({
       if (subject) q = q.eq("subject", subject);
       q.then(({ data }) => setArticles((data ?? []) as Article[]));
     } else {
-      let q = supabase.from("documents").select("id,title_ar,title_fr,subtitle_ar,subtitle_fr,source_url,video_url,term,exam_slot,sort_order")
+      let q = supabase.from("documents").select("id,title_ar,title_fr,subtitle_ar,subtitle_fr,video_url,term,exam_slot,sort_order")
         .eq("level", level).eq("subject", subject).eq("section", section)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
