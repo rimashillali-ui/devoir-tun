@@ -158,7 +158,7 @@ function TutorPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <BackButton />
+      <BackButton to="/" />
 
       <header className="glass p-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
