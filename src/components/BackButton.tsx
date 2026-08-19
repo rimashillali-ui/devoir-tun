@@ -7,7 +7,7 @@ export function BackButton({
   params,
 }: {
   to: any;
-  params?: Record<string, string>;
+  params?: Record<string, string | undefined>;
 }) {
   const { t, dir } = useLang();
   const Icon = dir === "rtl" ? ArrowRight : ArrowLeft;
