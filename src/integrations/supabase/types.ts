@@ -310,16 +310,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_list_admins: {
-        Args: never
-        Returns: {
-          created_at: string
-          email: string
-          user_id: string
-        }[]
-      }
-      admin_promote_by_email: { Args: { _email: string }; Returns: boolean }
-      admin_revoke_admin: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
