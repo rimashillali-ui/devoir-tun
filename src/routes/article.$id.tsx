@@ -14,10 +14,13 @@ export const Route = createFileRoute("/article/$id")({
   head: ({ params, loaderData }) => {
     const title = loaderData?.title_fr ?? loaderData?.title_ar ?? "";
     const url = `https://devoir-tun.lovable.app/article/${params.id}`;
+    const description = `${title} — ressource éducative gratuite sur Devoiratouna, plateforme tunisienne de cours et d'exercices.`;
     return {
       meta: [
         { title: `${title} — Devoiratouna` },
+        { name: "description", content: description },
         { property: "og:title", content: title },
+        { property: "og:description", content: description },
         { property: "og:type", content: "article" },
         { property: "og:url", content: url },
       ],

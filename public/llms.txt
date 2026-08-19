@@ -1,0 +1,23 @@
+# Devoiratouna
+
+> Plateforme éducative tunisienne gratuite : cours, exercices, devoirs, examens et concours en PDF, de la 9ème année de base au Baccalauréat, en français et en arabe.
+
+## Pages
+
+- [Accueil](/): Recherche et accès aux cinq niveaux (9ème, 1ère, 2ème, 3ème, Bac).
+- [À propos](/about): Présentation de la plateforme.
+- [Contact](/contact): Formulaire de contact.
+- [Confidentialité](/privacy): Politique de confidentialité.
+- [Conditions](/terms): Conditions d'utilisation.
+
+## Niveaux
+
+- [9ème année de base](/n/9eme): Matières et documents de la 9ème année.
+- [1ère année secondaire](/n/1sec): Matières et documents de la 1ère année.
+- [2ème année secondaire](/n/2sc): Filières, matières et documents.
+- [3ème année secondaire](/n/3eme): Filières, matières et documents.
+- [Baccalauréat](/n/bac): Filières, matières, examens et concours blancs.
+
+## Optional
+
+- [Sitemap](/sitemap.xml): Liste complète des pages indexables.
