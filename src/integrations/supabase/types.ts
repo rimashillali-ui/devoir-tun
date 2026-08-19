@@ -320,8 +320,6 @@ export type Database = {
       }
       admin_promote_by_email: { Args: { _email: string }; Returns: boolean }
       admin_revoke_admin: { Args: { _user_id: string }; Returns: boolean }
-      bootstrap_admin: { Args: never; Returns: boolean }
-      has_any_admin: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
