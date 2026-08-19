@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { LEVELS, getTracks, getSubjects, ARTICLE_SECTIONS, ARABIC_ONLY_SECTIONS } from "@/lib/constants";
 import { saveArticle, deleteArticle } from "@/lib/admin.functions";
 import { toast } from "sonner";
-import { Trash2, Pencil, Plus, X } from "lucide-react";
+import { Trash2, Pencil, Plus } from "lucide-react";
+import { AdminModal } from "./AdminModal";
 
 const input = "w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm";
 const label = "block text-xs text-muted-foreground mb-1";
@@ -94,8 +95,8 @@ function ArticleForm({ initial, onClose, onSaved }: { initial: any; onClose: () 
 
 
   return (
-    <form onSubmit={submit} className="glass p-4 space-y-3 relative">
-      <button type="button" onClick={onClose} className="absolute top-2 end-2 p-1 hover:bg-white/10 rounded"><X className="h-4 w-4" /></button>
+    <AdminModal title={a.id ? "Modifier l'article" : "Nouvel article"} onClose={onClose}>
+    <form onSubmit={submit} className="space-y-3">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div>
           <label className={label}>Section</label>
@@ -158,10 +159,11 @@ function ArticleForm({ initial, onClose, onSaved }: { initial: any; onClose: () 
         <textarea className={input + " font-mono"} rows={10} value={a.content_html_fr}
           onChange={(e) => setA({ ...a, content_html_fr: e.target.value })} disabled={frDisabled} />
       </div>
-      <div className="flex gap-2">
-        <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">Enregistrer</button>
+      <div className="flex gap-2 justify-end pt-2">
         <button type="button" onClick={onClose} className="px-4 py-2 rounded-md text-sm hover:bg-white/10">Annuler</button>
+        <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">Enregistrer</button>
       </div>
     </form>
+    </AdminModal>
   );
 }

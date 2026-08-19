@@ -4,8 +4,9 @@ import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Ter
 import { saveDocument, deleteDocument } from "@/lib/admin.functions";
 import { generateDevoirTitle } from "@/lib/title-generator";
 import { toast } from "sonner";
-import { Trash2, Pencil, Plus, X, Wand2, ArrowUpDown } from "lucide-react";
+import { Trash2, Pencil, Plus, Wand2, ArrowUpDown } from "lucide-react";
 import { ReorderPanel } from "./ReorderPanel";
+import { AdminModal } from "./AdminModal";
 
 
 type Doc = any;
@@ -166,8 +167,8 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   }
 
   return (
-    <form onSubmit={submit} className="glass p-4 space-y-3 relative">
-      <button type="button" onClick={onClose} className="absolute top-2 end-2 p-1 hover:bg-white/10 rounded"><X className="h-4 w-4" /></button>
+    <AdminModal title={d.id ? "Modifier le document" : "Nouveau document"} onClose={onClose}>
+    <form onSubmit={submit} className="space-y-3">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div>
           <label className={label}>Niveau</label>
@@ -257,10 +258,11 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         <label className={label}>Ordre d'affichage (plus petit = en premier)</label>
         <input type="number" className={input} value={d.sort_order} onChange={(e) => setD({ ...d, sort_order: e.target.value })} />
       </div>
-      <div className="flex gap-2">
-        <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">Enregistrer</button>
+      <div className="flex gap-2 justify-end pt-2">
         <button type="button" onClick={onClose} className="px-4 py-2 rounded-md text-sm hover:bg-white/10">Annuler</button>
+        <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">Enregistrer</button>
       </div>
     </form>
+    </AdminModal>
   );
 }
