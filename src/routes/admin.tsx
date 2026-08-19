@@ -59,6 +59,7 @@ function AdminPage() {
         <TabsContent value="settings"><SettingsAdmin /></TabsContent>
         <TabsContent value="roles"><RolesAdmin /></TabsContent>
         <TabsContent value="quiz"><QuizAdmin /></TabsContent>
+        <TabsContent value="tutor"><TutorDocsAdmin /></TabsContent>
         <TabsContent value="messages"><MessagesAdmin /></TabsContent>
       </Tabs>
     </div>
