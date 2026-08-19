@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n";
 import { getSubjects } from "@/lib/constants";
 import { subjectIcon } from "@/lib/section-icons";
+import { BackButton } from "@/components/BackButton";
 
 export const Route = createFileRoute("/n/$level/f/$track/")({
   head: ({ params }) => ({
@@ -16,6 +17,7 @@ function TrackPage() {
   const subjects = getSubjects(level, track);
   return (
     <div>
+      <BackButton to="/n/$level" params={{ level }} />
       <h1 className="text-3xl font-bold mb-2">{t.levels[level]} — {t.tracks[track] ?? track}</h1>
       <p className="text-muted-foreground mb-6">{t.subjects_title}</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

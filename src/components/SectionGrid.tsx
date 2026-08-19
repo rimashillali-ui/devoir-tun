@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { SECTIONS, ARABIC_ONLY_SECTIONS, TEXTE_ALLOWED_SUBJECTS } from "@/lib/constants";
 import { useLang } from "@/lib/i18n";
 import { sectionIcon } from "@/lib/section-icons";
+import { BackButton } from "@/components/BackButton";
 
 export function SectionGrid({ level, track, subject }: { level: string; track?: string; subject: string }) {
   const { t } = useLang();
@@ -9,8 +10,11 @@ export function SectionGrid({ level, track, subject }: { level: string; track?: 
     if (s === "texte") return TEXTE_ALLOWED_SUBJECTS.has(subject);
     return true;
   });
+  const backTo = track ? "/n/$level/f/$track" : "/n/$level";
+  const backParams = track ? { level, track } : { level };
   return (
     <div>
+      <BackButton to={backTo as any} params={backParams} />
       <h1 className="text-3xl font-bold mb-2">{t.subjects[subject] ?? subject}</h1>
       <p className="text-muted-foreground mb-6">{t.sections_title}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
