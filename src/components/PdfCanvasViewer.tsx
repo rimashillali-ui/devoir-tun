@@ -55,7 +55,8 @@ export function PdfCanvasViewer({ src, title }: { src: string; title?: string })
           await page.render({ canvasContext: ctx, viewport, canvas }).promise;
         }
         if (!cancelled) setStatus("ready");
-      } catch {
+      } catch (e) {
+        console.error("[pdf]", e);
         if (!cancelled) setStatus("error");
       }
     })();
