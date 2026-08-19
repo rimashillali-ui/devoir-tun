@@ -60,7 +60,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "google-site-verification", content: "HHhtTw_KjZYqbZJPd6wpiwwEj_MOPnsCHDD0bs-RpA8" },
+      { name: "google-site-verification", content: "MO7K0NFHOZTUrcd7T2-Mq-9mvXqHXwxTJ4XuweQeM6g" },
       { property: "og:site_name", content: "Devoiratouna" },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "https://devoiratona.lovable.app/cover.png" },
