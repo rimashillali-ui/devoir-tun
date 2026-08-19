@@ -50,6 +50,7 @@ function AdminPage() {
           <TabsTrigger value="roles">Rôles</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
           <TabsTrigger value="quiz">Quiz</TabsTrigger>
+          <TabsTrigger value="tutor">Cours IA</TabsTrigger>
         </TabsList>
         <TabsContent value="documents"><DocumentsAdmin /></TabsContent>
         <TabsContent value="articles"><ArticlesAdmin /></TabsContent>
