@@ -2,8 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
+export type TutorAttachment = { name: string; text: string };
 
-export type TutorInput = { level: "9" | "bac"; messages: ChatMsg[] };
+export type TutorInput = {
+  level: "9" | "bac";
+  messages: ChatMsg[];
+  attachments?: TutorAttachment[];
+};
+
+const MAX_COURSE_CHARS = 40_000;
+const MAX_ATTACH_CHARS = 20_000;
 
 function systemPrompt(level: "9" | "bac") {
   const niveau =
