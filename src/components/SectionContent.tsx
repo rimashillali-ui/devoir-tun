@@ -6,6 +6,7 @@ import { ARTICLE_SECTIONS, ARABIC_ONLY_SECTIONS, TERMS, getExamSlots, type Term 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Eye, Video, FileText } from "lucide-react";
 import { AdSlot } from "./AdSlot";
+import { BackButton } from "@/components/BackButton";
 
 type Doc = {
   id: string;
@@ -62,8 +63,12 @@ export function SectionContent({
   const dir = arabicOnly ? "rtl" : undefined;
   const useLang2 = arabicOnly ? "ar" : lang;
 
+  const backTo = track ? "/n/$level/f/$track/s/$subject" : "/n/$level/s/$subject";
+  const backParams = track ? { level, track, subject } : { level, subject };
+
   return (
     <div dir={dir} className="space-y-6">
+      <BackButton to={backTo as any} params={backParams} />
       <h1 className="text-3xl font-bold">{t.subjects[subject] ?? subject} — {t.sections[section] ?? section}</h1>
       <AdSlot slot="header" className="my-4 flex justify-center" />
 
