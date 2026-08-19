@@ -258,21 +258,6 @@ export const revokeAdmin = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ===== Admin bootstrap (premier admin uniquement) =====
-export const hasAnyAdmin = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc("has_any_admin");
-    if (error) throw new Error(error.message);
-    return data === true;
-  });
 
-export const bootstrapAdmin = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc("bootstrap_admin");
-    if (error) throw new Error(error.message);
-    return { ok: data === true };
-  });
 
 
