@@ -221,8 +221,8 @@ export function TutorDocsAdmin() {
               </button>
             </div>
           </div>
-        )}
-      </AdminModal>
+        </AdminModal>
+      )}
     </div>
   );
 }
