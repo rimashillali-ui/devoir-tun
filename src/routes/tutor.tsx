@@ -8,7 +8,8 @@ import "katex/dist/katex.min.css";
 import { supabase } from "@/integrations/supabase/client";
 import { askTutor } from "@/lib/tutor.functions";
 import { BackButton } from "@/components/BackButton";
-import { Sparkles, Send, Loader2, RotateCcw, GraduationCap, LogIn, Wifi } from "lucide-react";
+import { extractTextFromFile } from "@/lib/extract-text";
+import { Sparkles, Send, Loader2, RotateCcw, GraduationCap, LogIn, Wifi, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/tutor")({
