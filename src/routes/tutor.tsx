@@ -130,16 +130,20 @@ function TutorPage() {
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
-    if (!text || busy || !level) return;
-    const history = [...messages, { role: "user" as const, content: text }];
+    if ((!text && attachments.length === 0) || busy || !level) return;
+    const label = attachments.length
+      ? `${text || "Aide-moi avec ce document."}\n\n📎 ${attachments.map((a) => a.name).join(", ")}`
+      : text;
+    const history = [...messages, { role: "user" as const, content: label }];
     setMessages(history);
     setInput("");
     setBusy(true);
     const notice = setTimeout(() => setSwitching(true), 6000);
     try {
-      const res = await run({ data: { level, messages: history } });
+      const res = await run({ data: { level, messages: history, attachments } });
       if (res.fellBack) setSwitching(true);
       setMessages([...history, { role: "assistant", content: res.content }]);
+      setAttachments([]);
     } catch (err: any) {
       toast.error(err?.message ?? "L'assistant est indisponible.");
       setMessages(history);
