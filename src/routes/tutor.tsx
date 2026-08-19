@@ -54,8 +54,9 @@ function Bubble({ m }: { m: Msg }) {
         ) : (
           <div className="prose prose-sm prose-invert max-w-none prose-p:my-2 prose-headings:mt-3 prose-headings:mb-1 prose-pre:bg-black/40">
             <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-              {m.content}
+              {normalizeMath(m.content)}
             </ReactMarkdown>
+
           </div>
         )}
       </div>
