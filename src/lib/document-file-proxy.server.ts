@@ -184,7 +184,10 @@ export async function serveDocumentFile(id: string, mode: FileMode) {
     return Response.redirect(mode === "preview" ? microsoftPreviewUrl(source) : microsoftDownloadUrl(source), 302);
   }
 
-  const candidates = isMicrosoftUrl(source) ? microsoftCandidates(source) : [toDownloadUrl(source)];
+  // Fichier direct : on récupère le brut pour l'aperçu, la variante ?download pour le téléchargement.
+  const candidates = isDirectFileUrl(source)
+    ? unique(mode === "download" ? [toDownloadUrl(source), toRawUrl(source)] : [toRawUrl(source), toDownloadUrl(source)])
+    : [toDownloadUrl(source)];
 
   for (const candidate of candidates) {
     try {
