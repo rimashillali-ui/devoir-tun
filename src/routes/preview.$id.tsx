@@ -1,7 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang, pickTitle } from "@/lib/i18n";
-import { PdfViewer, YoutubeEmbed } from "@/components/Media";
+import { YoutubeEmbed } from "@/components/Media";
+import { PdfCanvasViewer } from "@/components/PdfCanvasViewer";
 import { toYoutubeEmbed } from "@/lib/url-helpers";
 import { AdSlot } from "@/components/AdSlot";
 import { Download, ArrowLeft } from "lucide-react";
