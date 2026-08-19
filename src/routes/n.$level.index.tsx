@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n";
 import { getTracks, getSubjects } from "@/lib/constants";
+import { trackIcon } from "@/lib/section-icons";
 
 export const Route = createFileRoute("/n/$level/")({
   head: ({ params }) => ({
@@ -21,16 +22,24 @@ function LevelPage() {
         <h1 className="text-3xl font-bold mb-2">{t.levels[level]}</h1>
         <p className="text-muted-foreground mb-6">{t.tracks_title}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tracks.map((tr) => (
+          {tracks.map((tr) => {
+            const Icon = trackIcon(tr);
+            return (
             <Link
               key={tr}
               to="/n/$level/f/$track"
               params={{ level, track: tr }}
               className="glass glass-hover p-6"
             >
-              <div className="text-lg font-bold">{t.tracks[tr] ?? tr}</div>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary shrink-0">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <div className="text-lg font-bold">{t.tracks[tr] ?? tr}</div>
+              </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
