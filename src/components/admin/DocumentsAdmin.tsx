@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { saveDocument, deleteDocument } from "@/lib/admin.functions";
-import { generateDevoirTitle } from "@/lib/title-generator";
+import { generateDocTitle } from "@/lib/title-generator";
 import { toast } from "sonner";
 import { Trash2, Pencil, Plus, Wand2, ArrowUpDown } from "lucide-react";
 import { ReorderPanel } from "./ReorderPanel";
@@ -124,14 +124,17 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   const slots = d.term ? getExamSlots(d.subject, d.term as Term, d.level) : [];
 
   function autoGenerateTitle() {
-    if (d.section !== "devoirs" || !d.exam_slot) {
-      toast.error("Disponible uniquement pour Devoirs avec un type sélectionné");
+    if (!d.subject) { toast.error("Choisis d'abord une matière"); return; }
+    if (d.section === "devoirs" && !d.exam_slot) {
+      toast.error("Choisis le type (contrôle / synthèse) pour générer le titre");
       return;
     }
-    const t = generateDevoirTitle({
+    const t = generateDocTitle({
       level: d.level,
       track: d.track,
       subject: d.subject,
+      section: d.section,
+      term: d.term,
       examSlot: d.exam_slot,
       sortOrder: Number(d.sort_order) || 1,
     });
@@ -219,7 +222,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
           )}
         </div>
       )}
-      {d.section === "devoirs" && (
+      {(
         <button type="button" onClick={autoGenerateTitle}
           className="inline-flex items-center gap-1 text-xs bg-cyan/20 text-cyan border border-cyan/30 px-3 py-1.5 rounded-md hover:bg-cyan/30">
           <Wand2 className="h-3.5 w-3.5" /> Générer titres FR / AR auto
