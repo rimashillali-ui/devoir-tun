@@ -18,7 +18,6 @@ const BAC_COMMON = [
   "anglais",
   "philo",
   "histoire-geo",
-  "education-islamique",
   "informatique",
 ];
 
