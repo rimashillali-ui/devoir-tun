@@ -56,7 +56,6 @@ function AuthPage() {
   const [showPass, setShowPass] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminExists, setAdminExists] = useState<boolean | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [otpType, setOtpType] = useState<"signup" | "email">("signup");
