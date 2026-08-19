@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { SECTIONS, ARABIC_ONLY_SECTIONS, TEXTE_ALLOWED_SUBJECTS } from "@/lib/constants";
 import { useLang } from "@/lib/i18n";
+import { sectionIcon } from "@/lib/section-icons";
 
 export function SectionGrid({ level, track, subject }: { level: string; track?: string; subject: string }) {
   const { t } = useLang();
@@ -18,6 +19,7 @@ export function SectionGrid({ level, track, subject }: { level: string; track?: 
           const params = track
             ? { level, track, subject, section: s }
             : { level, subject, section: s };
+          const Icon = sectionIcon(s);
           const to = track
             ? "/n/$level/f/$track/s/$subject/$section"
             : "/n/$level/s/$subject/$section";
@@ -29,7 +31,12 @@ export function SectionGrid({ level, track, subject }: { level: string; track?: 
               className="glass glass-hover p-6"
               dir={arabicOnly ? "rtl" : undefined}
             >
-              <div className="text-xl font-bold">{t.sections[s] ?? s}</div>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary shrink-0">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <div className="text-xl font-bold">{t.sections[s] ?? s}</div>
+              </div>
             </Link>
           );
         })}
