@@ -166,8 +166,8 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   }
 
   return (
-    <form onSubmit={submit} className="glass p-4 space-y-3 relative">
-      <button type="button" onClick={onClose} className="absolute top-2 end-2 p-1 hover:bg-white/10 rounded"><X className="h-4 w-4" /></button>
+    <AdminModal title={d.id ? "Modifier le document" : "Nouveau document"} onClose={onClose}>
+    <form onSubmit={submit} className="space-y-3">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div>
           <label className={label}>Niveau</label>
