@@ -13,7 +13,7 @@ type Doc = {
   title_fr: string;
   subtitle_ar: string | null;
   subtitle_fr: string | null;
-  source_url: string;
+  
   video_url: string | null;
   term: string | null;
   exam_slot: string | null;
