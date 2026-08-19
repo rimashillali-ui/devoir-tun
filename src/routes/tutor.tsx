@@ -271,31 +271,74 @@ function TutorPage() {
             <div ref={endRef} />
           </div>
 
-          <form onSubmit={send} className="glass p-3 flex items-end gap-2 sticky bottom-2">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send(e as unknown as React.FormEvent);
-                }
-              }}
-              rows={2}
-              placeholder="Écris ta question…"
-              className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-cyan/50 resize-none"
-            />
-            <button
-              type="submit"
-              disabled={busy || !input.trim()}
-              className="bg-cyan text-background font-bold h-11 w-11 rounded-lg flex items-center justify-center disabled:opacity-40"
-              aria-label="Envoyer"
-            >
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </button>
+          <form onSubmit={send} className="glass p-3 space-y-2 sticky bottom-2">
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {attachments.map((a, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1.5 text-xs bg-white/5 border border-white/10 rounded-full px-3 py-1"
+                  >
+                    <Paperclip className="h-3 w-3 text-cyan" /> {a.name}
+                    <button
+                      type="button"
+                      onClick={() => setAttachments((list) => list.filter((_, j) => j !== i))}
+                      aria-label="Retirer"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex items-end gap-2">
+              <label
+                className="h-11 w-11 shrink-0 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center cursor-pointer hover:border-cyan/50"
+                title="Joindre un PDF ou un fichier texte"
+              >
+                {reading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-cyan" />
+                ) : (
+                  <Paperclip className="h-4 w-4" />
+                )}
+                <input
+                  type="file"
+                  accept=".pdf,.txt,.md,text/plain,application/pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void addFile(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void send(e as unknown as React.FormEvent);
+                  }
+                }}
+                rows={2}
+                placeholder="Écris ta question…"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-cyan/50 resize-none"
+              />
+              <button
+                type="submit"
+                disabled={busy || reading || (!input.trim() && attachments.length === 0)}
+                className="bg-cyan text-background font-bold h-11 w-11 rounded-lg flex items-center justify-center disabled:opacity-40"
+                aria-label="Envoyer"
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </button>
+            </div>
           </form>
           <p className="text-[11px] text-muted-foreground text-center">
-            L'assistant guide sans donner la solution finale. Vérifie toujours avec ton cours.
+            L'assistant guide sans donner la solution finale. Tu peux joindre un exercice ou un cours (PDF /
+            texte). Vérifie toujours avec ton cours.
           </p>
         </>
       )}
