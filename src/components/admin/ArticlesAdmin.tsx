@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { LEVELS, getTracks, getSubjects, ARTICLE_SECTIONS, ARABIC_ONLY_SECTIONS } from "@/lib/constants";
 import { saveArticle, deleteArticle } from "@/lib/admin.functions";
 import { toast } from "sonner";
-import { Trash2, Pencil, Plus, X } from "lucide-react";
+import { Trash2, Pencil, Plus } from "lucide-react";
+import { AdminModal } from "./AdminModal";
 
 const input = "w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm";
 const label = "block text-xs text-muted-foreground mb-1";
