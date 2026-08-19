@@ -23,7 +23,7 @@ export default defineTool({
     );
     let q = supabase
       .from("documents")
-      .select("id,title_fr,title_ar,subject,level,track,section,term,exam_slot,source_url")
+      .select("id,title_fr,title_ar,subject,level,track,section,term,exam_slot")
       .order("sort_order", { ascending: true })
       .limit(limit ?? 20);
     if (level) q = q.eq("level", level);
