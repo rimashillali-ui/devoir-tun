@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 export function PdfCanvasViewer({ src, title }: { src: string; title?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [err, setErr] = useState("");
   const [pages, setPages] = useState(0);
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export function PdfCanvasViewer({ src, title }: { src: string; title?: string })
         }
         if (!cancelled) setStatus("ready");
       } catch (e) {
-        console.error("[pdf]", e);
+        setErr(String((e as any)?.message ?? e));
         if (!cancelled) setStatus("error");
       }
     })();
@@ -76,7 +77,7 @@ export function PdfCanvasViewer({ src, title }: { src: string; title?: string })
       )}
       {status === "error" && (
         <p className="py-10 text-center text-sm text-muted-foreground">
-          Impossible d'afficher l'aperçu de ce document.
+          Impossible d'afficher l'aperçu de ce document. {err}
         </p>
       )}
       <div
