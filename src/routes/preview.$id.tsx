@@ -45,7 +45,7 @@ function PreviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px] gap-4">
         <div className="space-y-4">
           {ytEmbed && <YoutubeEmbed src={ytEmbed} title={doc.title_fr ?? doc.title_ar} />}
-          <PdfViewer src={previewSrc} title={doc.title_fr ?? doc.title_ar} />
+          <PdfCanvasViewer src={previewSrc} title={doc.title_fr ?? doc.title_ar} />
         </div>
         <aside className="space-y-4 hidden lg:block">
           <AdSlot slot="sidebar_left" />
