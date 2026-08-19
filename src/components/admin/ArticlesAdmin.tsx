@@ -159,10 +159,11 @@ function ArticleForm({ initial, onClose, onSaved }: { initial: any; onClose: () 
         <textarea className={input + " font-mono"} rows={10} value={a.content_html_fr}
           onChange={(e) => setA({ ...a, content_html_fr: e.target.value })} disabled={frDisabled} />
       </div>
-      <div className="flex gap-2">
-        <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">Enregistrer</button>
+      <div className="flex gap-2 justify-end pt-2">
         <button type="button" onClick={onClose} className="px-4 py-2 rounded-md text-sm hover:bg-white/10">Annuler</button>
+        <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">Enregistrer</button>
       </div>
     </form>
+    </AdminModal>
   );
 }
