@@ -1,0 +1,2 @@
+REVOKE SELECT ON public.documents FROM anon;
+GRANT SELECT (id, level, track, subject, section, term, exam_slot, title_ar, title_fr, subtitle_ar, subtitle_fr, video_url, sort_order, created_at) ON public.documents TO anon;

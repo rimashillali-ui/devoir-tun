@@ -1,6 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
-import { toDownloadUrl } from "@/lib/url-helpers";
+import { toDownloadUrl, toRawUrl, isDirectFileUrl } from "@/lib/url-helpers";
 
 type FileMode = "preview" | "download";
 
@@ -160,12 +158,9 @@ async function fetchCandidate(url: string, depth = 0): Promise<{ buffer: ArrayBu
 
 async function getDocument(id: string) {
   if (!UUID_RE.test(id)) return null;
-  const supabase = createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
-  const { data, error } = await supabase
+  // Lecture serveur uniquement : la colonne source_url n'est plus lisible par les visiteurs.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
     .from("documents")
     .select("source_url,title_fr,title_ar")
     .eq("id", id)
@@ -184,7 +179,10 @@ export async function serveDocumentFile(id: string, mode: FileMode) {
     return Response.redirect(mode === "preview" ? microsoftPreviewUrl(source) : microsoftDownloadUrl(source), 302);
   }
 
-  const candidates = isMicrosoftUrl(source) ? microsoftCandidates(source) : [toDownloadUrl(source)];
+  // Fichier direct : on récupère le brut pour l'aperçu, la variante ?download pour le téléchargement.
+  const candidates = isDirectFileUrl(source)
+    ? unique(mode === "download" ? [toDownloadUrl(source), toRawUrl(source)] : [toRawUrl(source), toDownloadUrl(source)])
+    : [toDownloadUrl(source)];
 
   for (const candidate of candidates) {
     try {

@@ -2,14 +2,15 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang, pickTitle } from "@/lib/i18n";
 import { PdfViewer, YoutubeEmbed } from "@/components/Media";
-import { toPreviewUrl, toYoutubeEmbed } from "@/lib/url-helpers";
+import { toYoutubeEmbed } from "@/lib/url-helpers";
 import { AdSlot } from "@/components/AdSlot";
 import { Download, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/preview/$id")({
   loader: async ({ params }) => {
+    // On ne charge JAMAIS source_url côté client : l'aperçu passe par notre proxy.
     const { data } = await supabase.from("documents")
-      .select("id,title_ar,title_fr,source_url,video_url").eq("id", params.id).maybeSingle();
+      .select("id,title_ar,title_fr,video_url").eq("id", params.id).maybeSingle();
     if (!data) throw notFound();
     return data;
   },
@@ -25,7 +26,7 @@ function PreviewPage() {
   const doc = Route.useLoaderData();
   const { lang, t } = useLang();
   const ytEmbed = doc.video_url ? toYoutubeEmbed(doc.video_url) : null;
-  const previewSrc = toPreviewUrl(doc.source_url);
+  const previewSrc = `/api/public/documents/${doc.id}/preview`;
 
   return (
     <div className="space-y-4">
