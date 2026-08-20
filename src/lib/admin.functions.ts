@@ -288,3 +288,18 @@ export const revokeAdmin = createServerFn({ method: "POST" })
 
 
 
+
+// ===== Tuteur IA : prompts par niveau =====
+export const saveTutorPrompt = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { level: string; prompt: string }) =>
+    z.object({ level: z.string().min(1).max(20), prompt: z.string().max(8000) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("tutor_prompts")
+      .upsert({ level: data.level, prompt: data.prompt, updated_at: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
