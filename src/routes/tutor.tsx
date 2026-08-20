@@ -16,6 +16,17 @@ import {
   type ShortDocResult,
   type ShortDocProgress,
 } from "@/lib/short-doc";
+import {
+  loadAttachments,
+  saveAttachment,
+  dropAttachments,
+  purgeExpiredAttachments,
+  loadDraft,
+  saveDraft,
+  clearDraft,
+  retentionCutoffIso,
+  TUTOR_RETENTION_DAYS,
+} from "@/lib/tutor-store";
 
 
 import { subjectsForLevelTrack, subjectLabel, tracksForLevel, trackLabel } from "@/lib/tutor-meta";
