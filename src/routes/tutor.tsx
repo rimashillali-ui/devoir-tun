@@ -801,11 +801,15 @@ function TutorPage() {
                 {book && (
                   <div className="flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald/5 px-3 py-2 text-xs">
                     <FileText className="h-4 w-4 text-emerald shrink-0" />
-                    <span className="flex-1 truncate">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDoc({ name: book.name, pages: book.pages, text: book.text })}
+                      className="flex-1 truncate text-start underline decoration-dotted"
+                    >
                       <span className="font-bold">{book.name}</span> · {book.pages} page(s)
                       {book.images.length > 0 && ` · ${book.images.length} page(s) lue(s) en vision`}
                       {book.truncatedPages > 0 && ` · ${book.truncatedPages} page(s) non lue(s)`}
-                    </span>
+                    </button>
                     <button type="button" aria-label="Retirer le document" onClick={() => setBook(null)}>
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -822,7 +826,10 @@ function TutorPage() {
                   <div className="flex flex-wrap gap-2">
                     {images.map((src, i) => (
                       <div key={i} className="relative">
-                        <img src={src} alt="À envoyer" className="h-16 w-16 object-cover rounded-lg" />
+                        <button type="button" onClick={() => setPreviewImage(src)} aria-label="Agrandir l'image">
+                          <img src={src} alt="À envoyer" className="h-16 w-16 object-cover rounded-lg cursor-zoom-in" />
+                        </button>
+
                         <button
                           type="button"
                           aria-label="Retirer l'image"
