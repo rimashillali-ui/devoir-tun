@@ -143,7 +143,7 @@ function Bubble({ m }: { m: Msg }) {
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[92%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+        className={`max-w-[92%] sm:max-w-[80%] rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 break-words text-sm leading-relaxed ${
           mine
             ? "bg-cyan text-background font-medium rounded-br-sm"
             : "glass border border-white/10 rounded-bl-sm"
@@ -158,7 +158,7 @@ function Bubble({ m }: { m: Msg }) {
 
           <div className="flex flex-wrap gap-2 mb-2">
             {m.images.map((src, i) => (
-              <img key={i} src={src} alt="Pièce jointe" className="h-24 w-24 object-cover rounded-lg" />
+              <img key={i} src={src} alt="Pièce jointe" className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-lg" />
             ))}
           </div>
         )}
@@ -436,8 +436,8 @@ function TutorPage() {
           onClick={newChat}
           className="flex items-center gap-1.5 text-xs font-bold border border-white/10 rounded-lg px-3 py-2 hover:border-cyan/40 shrink-0"
         >
-          <Plus className="h-3.5 w-3.5" /> <span className="hidden xs:inline sm:inline">Nouvelle discussion</span>
-          <span className="sm:hidden xs:hidden">Nouveau</span>
+          <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Nouvelle discussion</span>
+          <span className="sm:hidden">Nouveau</span>
         </button>
       </header>
 
@@ -670,7 +670,7 @@ function TutorPage() {
                     }}
                     rows={1}
                     placeholder="Écris ta question…"
-                    className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-base sm:text-sm outline-none focus:border-cyan/50 resize-none max-h-32 sm:rows-2"
+                    className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-base sm:text-sm outline-none focus:border-cyan/50 resize-none max-h-32"
                   />
                   <button
                     type="submit"
