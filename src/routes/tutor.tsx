@@ -188,8 +188,55 @@ async function compressImage(file: File) {
 }
 
 
+/** Visionneuse plein écran : image agrandie ou texte du document joint. */
+function AttachmentViewer({
+  image,
+  doc,
+  onClose,
+}: {
+  image?: string | null;
+  doc?: { name: string; pages: number; text: string } | null;
+  onClose: () => void;
+}) {
+  if (!image && !doc) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm p-3 sm:p-6"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <button
+        type="button"
+        aria-label="Fermer"
+        onClick={onClose}
+        className="absolute top-3 end-3 rounded-full border border-white/20 bg-background/80 p-2"
+      >
+        <X className="h-4 w-4" />
+      </button>
+      <div className="max-h-full w-full max-w-3xl overflow-auto" onClick={(e) => e.stopPropagation()}>
+        {image && (
+          <img src={image} alt="Pièce jointe agrandie" className="mx-auto max-h-[85vh] w-auto rounded-lg" />
+        )}
+        {doc && (
+          <div className="glass rounded-xl border border-white/10 p-4">
+            <p className="mb-3 flex items-center gap-2 text-sm font-bold">
+              <FileText className="h-4 w-4 text-emerald" /> {doc.name} · {doc.pages} page(s)
+            </p>
+            <pre className="max-h-[70vh] overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+              {doc.text || "Aucun texte extrait de ce document."}
+            </pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Bubble({ m }: { m: Msg }) {
   const mine = m.role === "user";
+  const [zoom, setZoom] = useState<string | null>(null);
+  const [showDoc, setShowDoc] = useState(false);
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
       <div
@@ -200,15 +247,24 @@ function Bubble({ m }: { m: Msg }) {
         }`}
       >
         {m.book && (
-          <p className="mb-2 flex items-center gap-1.5 text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setShowDoc(true)}
+            className="mb-2 flex items-center gap-1.5 text-xs font-bold underline decoration-dotted"
+          >
             <FileText className="h-3.5 w-3.5" /> {m.book.name} · {m.book.pages} page(s)
-          </p>
+          </button>
         )}
         {m.images && m.images.length > 0 && (
-
           <div className="flex flex-wrap gap-2 mb-2">
             {m.images.map((src, i) => (
-              <img key={i} src={src} alt="Pièce jointe" className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-lg" />
+              <button key={i} type="button" onClick={() => setZoom(src)} aria-label="Agrandir la pièce jointe">
+                <img
+                  src={src}
+                  alt="Pièce jointe"
+                  className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-lg cursor-zoom-in"
+                />
+              </button>
             ))}
           </div>
         )}
@@ -227,9 +283,18 @@ function Bubble({ m }: { m: Msg }) {
           </p>
         )}
       </div>
+      <AttachmentViewer
+        image={zoom}
+        doc={showDoc ? m.book ?? null : null}
+        onClose={() => {
+          setZoom(null);
+          setShowDoc(false);
+        }}
+      />
     </div>
   );
 }
+
 
 function TutorPage() {
   const run = useServerFn(askTutor);
