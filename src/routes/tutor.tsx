@@ -34,7 +34,7 @@ import {
   MessageSquare,
   ImageIcon,
   Cpu,
-  BookOpen,
+  FileText,
 
 } from "lucide-react";
 import { toast } from "sonner";
