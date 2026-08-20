@@ -129,21 +129,36 @@ async function callOpenAICompatible(opts: {
   return cleanReasoning(content);
 }
 
-type Attempt = { provider: "lovable" | "groq" | "openrouter"; model: string };
+type Provider = "lovable" | "groq" | "openrouter" | "cerebras" | "together" | "deepinfra";
+type Attempt = { provider: Provider; model: string };
+type Keys = Partial<Record<Provider, string | undefined>>;
 
 const OPENROUTER_HEADERS = {
   "HTTP-Referer": "https://devoiratona.lovable.app",
   "X-Title": "Devoiratouna",
 };
 
+/** Endpoints OpenAI-compatibles de chaque fournisseur. */
+const ENDPOINTS: Record<Provider, string> = {
+  lovable: "https://ai.gateway.lovable.dev/v1/chat/completions",
+  groq: "https://api.groq.com/openai/v1/chat/completions",
+  openrouter: "https://openrouter.ai/api/v1/chat/completions",
+  cerebras: "https://api.cerebras.ai/v1/chat/completions",
+  together: "https://api.together.xyz/v1/chat/completions",
+  deepinfra: "https://api.deepinfra.com/v1/openai/chat/completions",
+};
+
 /**
- * Cascade de modèles. Les modèles vision de Groq n'existent plus :
- * toute requête avec image/document passe d'abord par Lovable AI (Gemini),
- * puis par OpenRouter (Gemini, Grok, GPT).
+ * Cascade de modèles.
+ * Vision : Gemini (Lovable AI) → OpenRouter (Qwen3-VL, Grok, Kimi, GPT) →
+ * Together AI (Llama 3.2 Vision) en dernier recours.
+ * Texte : Groq → Gemini → OpenRouter → Cerebras → Together AI → DeepInfra.
+ * Sur quota (429) ou erreur serveur d'un fournisseur, ses modèles restants
+ * sont sautés et on passe directement au fournisseur suivant.
  */
-function buildAttempts(opts: { vision: boolean; keys: { lovable?: string; groq?: string; openrouter?: string } }) {
+function buildAttempts(opts: { vision: boolean; keys: Keys }) {
   const list: Attempt[] = [];
-  const push = (provider: Attempt["provider"], models: string[]) => {
+  const push = (provider: Provider, models: string[]) => {
     if (!opts.keys[provider]) return;
     for (const model of models) list.push({ provider, model });
   };
@@ -160,6 +175,7 @@ function buildAttempts(opts: { vision: boolean; keys: { lovable?: string; groq?:
       "moonshotai/kimi-k2",
       "openai/gpt-4.1-mini",
     ]);
+    push("together", ["meta-llama/Llama-3.2-11b-Vision-Instruct"]);
     return list;
   }
 
@@ -175,7 +191,15 @@ function buildAttempts(opts: { vision: boolean; keys: { lovable?: string; groq?:
     "x-ai/grok-4.3",
     "openai/gpt-4.1-mini",
   ]);
+  push("cerebras", ["llama3.1-8b"]);
+  push("together", ["meta-llama/Llama-3.2-11b-Vision-Instruct"]);
+  push("deepinfra", ["deepseek-ai/DeepSeek-V3"]);
   return list;
+}
+
+/** Quota épuisé (429) ou panne serveur (5xx) => on change de fournisseur. */
+function isQuotaOrServerError(message: string) {
+  return /\b(429|5\d\d)\b/.test(message) || /quota|rate.?limit|overload|capacity/i.test(message);
 }
 
 
@@ -268,10 +292,13 @@ export const askTutor = createServerFn({ method: "POST" })
       ...toApiMessages(data.messages),
     ];
 
-    const keys = {
+    const keys: Keys = {
       groq: process.env["GROQ_API_KEY"],
       openrouter: process.env["OPENROUTER_API_KEY"],
       lovable: process.env["LOVABLE_API_KEY"],
+      cerebras: process.env["CEREBRAS_API_KEY"],
+      together: process.env["TOGETHER_API_KEY"],
+      deepinfra: process.env["DEEPINFRA_API_KEY"],
     };
 
     // Toute image / document joint => cascade vision (Gemini d'abord).
@@ -279,19 +306,14 @@ export const askTutor = createServerFn({ method: "POST" })
     const attempts = buildAttempts({ vision, keys });
     if (attempts.length === 0) throw new Error("Service IA indisponible pour le moment.");
 
-    const endpoints = {
-      lovable: "https://ai.gateway.lovable.dev/v1/chat/completions",
-      groq: "https://api.groq.com/openai/v1/chat/completions",
-      openrouter: "https://openrouter.ai/api/v1/chat/completions",
-    } as const;
-
     let lastError = "";
+    const blocked = new Set<Provider>();
     for (const [index, attempt] of attempts.entries()) {
       const key = keys[attempt.provider];
-      if (!key) continue;
+      if (!key || blocked.has(attempt.provider)) continue;
       try {
         const content = await callOpenAICompatible({
-          url: endpoints[attempt.provider],
+          url: ENDPOINTS[attempt.provider],
           key,
           model: attempt.model,
           body: {
@@ -306,6 +328,9 @@ export const askTutor = createServerFn({ method: "POST" })
         return { content, provider: attempt.provider, model: attempt.model, fellBack: index > 0 };
       } catch (err) {
         lastError = (err as Error).message;
+        // Quota (429) ou panne (5xx) : ce fournisseur est saturé, on saute
+        // ses autres modèles et on bascule sur le suivant de la cascade.
+        if (isQuotaOrServerError(lastError)) blocked.add(attempt.provider);
         console.error(`[tutor] ${attempt.provider} (${attempt.model}) indisponible:`, lastError);
       }
     }
