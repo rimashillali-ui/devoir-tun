@@ -21,6 +21,46 @@ const MAX_TEXT_CHARS = 240_000;
 const MAX_VISION_PAGES = 12;
 const RENDER_WIDTH = 1100;
 
+export type ReadBookOptions = {
+  /** "auto" : images seulement pour les pages sans texte. "always" : vision sur toutes les pages. */
+  vision?: "auto" | "always";
+  /** Nombre maximum de pages converties en images. */
+  maxVisionPages?: number;
+  /** Ne rend en image qu'à partir de cette page (1-indexé). */
+  fromPage?: number;
+  /** Dernière page traitée (incluse). */
+  toPage?: number;
+};
+
+/** Rend une plage de pages d'un PDF en images JPEG (data URL) pour la vision. */
+export async function renderBookPages(
+  file: File,
+  opts: { fromPage: number; toPage: number; onProgress?: (p: BookProgress) => void },
+): Promise<{ page: number; image: string }[]> {
+  const pdfjs = await loadPdfjs();
+  const buffer = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: buffer }).promise;
+  const total: number = pdf.numPages;
+  const last = Math.min(total, opts.toPage);
+  const out: { page: number; image: string }[] = [];
+  for (let i = Math.max(1, opts.fromPage); i <= last; i++) {
+    opts.onProgress?.({ page: i, total: last });
+    const page = await pdf.getPage(i);
+    const img = await renderPageToJpeg(page);
+    if (img) out.push({ page: i, image: img });
+    page.cleanup?.();
+  }
+  return out;
+}
+
+/** Nombre de pages d'un PDF. */
+export async function countPages(file: File): Promise<number> {
+  const pdfjs = await loadPdfjs();
+  const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  return pdf.numPages as number;
+}
+
+
 async function loadPdfjs() {
   const pdfjs: any = await import("pdfjs-dist");
   const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");

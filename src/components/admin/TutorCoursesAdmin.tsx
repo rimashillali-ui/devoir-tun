@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { extractTextFromFile } from "@/lib/extract-text";
+import { countPages, renderBookPages } from "@/lib/pdf-book";
+import { transcribeBookPages } from "@/lib/tutor-vision.functions";
 import {
   TUTOR_LEVELS,
   LEVEL_LABELS,
@@ -10,8 +13,9 @@ import {
   trackLabel,
 } from "@/lib/tutor-meta";
 import { AdminModal } from "@/components/admin/AdminModal";
-import { BookOpen, Loader2, Plus, Trash2, Upload, Pencil, Eye, EyeOff } from "lucide-react";
+import { BookOpen, Loader2, Plus, Trash2, Upload, Pencil, Eye, EyeOff, ScanEye } from "lucide-react";
 import { toast } from "sonner";
+
 
 type Doc = {
   id: string;
@@ -44,6 +48,11 @@ export function TutorCoursesAdmin() {
   const [extracting, setExtracting] = useState(false);
   const [filterLevel, setFilterLevel] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [book, setBook] = useState<{ file: File; pages: number } | null>(null);
+  const [range, setRange] = useState({ from: 1, to: 20 });
+  const [vision, setVision] = useState<{ running: boolean; label: string }>({ running: false, label: "" });
+  const transcribe = useServerFn(transcribeBookPages);
+
 
   async function load() {
     const { data, error } = await supabase
@@ -68,6 +77,7 @@ export function TutorCoursesAdmin() {
 
   function openNew() {
     setForm({ ...empty });
+    setBook(null);
     setOpen(true);
   }
 
@@ -82,22 +92,32 @@ export function TutorCoursesAdmin() {
       content: d.content,
       enabled: d.enabled,
     });
+    setBook(null);
     setOpen(true);
   }
+
 
   async function onFile(file: File | undefined) {
     if (!file) return;
     setExtracting(true);
+    setBook(null);
     try {
+      const isPdf = file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
+      if (isPdf) {
+        const pages = await countPages(file);
+        setBook({ file, pages });
+        setRange({ from: 1, to: Math.min(20, pages) });
+      }
       const text = await extractTextFromFile(file);
-      if (!text) throw new Error("Aucun texte détecté (PDF scanné ?)");
       setForm((f) => ({
         ...f,
-        content: text.slice(0, 200000),
+        content: text ? text.slice(0, 200000) : f.content,
         file_name: file.name,
         title: f.title || file.name.replace(/\.[^.]+$/, ""),
       }));
-      toast.success(`Texte extrait (${text.length} caractères)`);
+      if (text) toast.success(`Texte extrait (${text.length} caractères)`);
+      else if (isPdf) toast.info("Aucun texte détecté : utilise la lecture par vision ci-dessous.");
+      else throw new Error("Fichier vide");
     } catch (e: any) {
       toast.error(e?.message ?? "Extraction impossible");
     } finally {
@@ -105,6 +125,43 @@ export function TutorCoursesAdmin() {
       if (fileRef.current) fileRef.current.value = "";
     }
   }
+
+  /** Lecture par vision : rend les pages en images et les fait transcrire par l'IA. */
+  async function runVision() {
+    if (!book) return;
+    const from = Math.max(1, Math.min(book.pages, Math.trunc(range.from) || 1));
+    const to = Math.max(from, Math.min(book.pages, Math.trunc(range.to) || from));
+    if (to - from + 1 > 60) {
+      toast.error("60 pages maximum par passe. Fais le livre par tranches.");
+      return;
+    }
+    setVision({ running: true, label: "Préparation des pages…" });
+    const chunks: string[] = [];
+    try {
+      const BATCH = 5;
+      for (let start = from; start <= to; start += BATCH) {
+        const end = Math.min(to, start + BATCH - 1);
+        setVision({ running: true, label: `Rendu des pages ${start}–${end}…` });
+        const pages = await renderBookPages(book.file, { fromPage: start, toPage: end });
+        if (pages.length === 0) continue;
+        setVision({ running: true, label: `Lecture IA des pages ${start}–${end}…` });
+        const res = await transcribe({ data: { pages, title: form.title || book.file.name } });
+        if (res?.text) chunks.push(res.text.trim());
+      }
+      if (chunks.length === 0) throw new Error("Aucun contenu transcrit");
+      const added = `\n\n${chunks.join("\n\n")}`;
+      setForm((f) => ({ ...f, content: (f.content + added).slice(0, 400000) }));
+      toast.success(`Vision terminée : pages ${from}–${to} ajoutées (${added.length} caractères)`);
+    } catch (e: any) {
+      if (chunks.length > 0) {
+        setForm((f) => ({ ...f, content: (f.content + "\n\n" + chunks.join("\n\n")).slice(0, 400000) }));
+      }
+      toast.error(e?.message ?? "Lecture par vision impossible");
+    } finally {
+      setVision({ running: false, label: "" });
+    }
+  }
+
 
   async function save() {
     if (!form.title.trim() || !form.content.trim()) {
@@ -295,6 +352,55 @@ export function TutorCoursesAdmin() {
                 Le texte est extrait automatiquement puis modifiable ci-dessous.
               </span>
             </div>
+
+            {book && (
+              <div className="glass p-3 space-y-2">
+                <p className="text-sm font-bold flex items-center gap-2">
+                  <ScanEye className="h-4 w-4 text-cyan" /> Lecture par vision — {book.pages} page(s)
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  L'IA lit les pages comme des images (utile pour les livres scannés ou quand l'extraction de
+                  texte est incomplète). Traite par tranches de 60 pages maximum ; le résultat s'ajoute au
+                  contenu ci-dessous.
+                </p>
+                <div className="flex flex-wrap items-end gap-2">
+                  <label className="text-sm space-y-1">
+                    <span className="text-xs text-muted-foreground block">De la page</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={book.pages}
+                      value={range.from}
+                      onChange={(e) => setRange((r) => ({ ...r, from: Number(e.target.value) }))}
+                      className="w-24 bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <label className="text-sm space-y-1">
+                    <span className="text-xs text-muted-foreground block">à la page</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={book.pages}
+                      value={range.to}
+                      onChange={(e) => setRange((r) => ({ ...r, to: Number(e.target.value) }))}
+                      className="w-24 bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => void runVision()}
+                    disabled={vision.running}
+                    className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-bold disabled:opacity-50"
+                  >
+                    {vision.running ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanEye className="h-4 w-4" />}
+                    Lire par vision
+                  </button>
+                  {vision.running && <span className="text-xs text-muted-foreground">{vision.label}</span>}
+                </div>
+              </div>
+            )}
+
+
 
             <label className="text-sm space-y-1 block">
               <span className="text-xs text-muted-foreground">Contenu du cours (texte de référence)</span>
