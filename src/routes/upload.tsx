@@ -167,8 +167,8 @@ function UploadPage() {
         </h1>
         <p className="text-sm text-muted-foreground">
           {ar
-            ? `أنت متصل بـ ${email}. املأ الاستمارة وأرفق ملفك (PDF أو صورة)؛ يُرسَل مباشرة إلى فريق ديفواراتونا.`
-            : `Connecté avec ${email}. Remplissez le formulaire et joignez votre fichier (PDF ou image) : il nous parvient directement.`}
+            ? "املأ الاستمارة وأرفق ملفك (PDF أو صورة)؛ يُرسَل مباشرة إلى فريق ديفواراتونا."
+            : "Remplissez le formulaire et joignez votre fichier (PDF ou image) : il nous parvient directement."}
         </p>
       </div>
 
