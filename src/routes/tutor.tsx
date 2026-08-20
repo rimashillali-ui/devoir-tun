@@ -359,6 +359,8 @@ function TutorPage() {
     clearDraft();
   }
 
+  const [dragging, setDragging] = useState(false);
+
   async function pickImages(files: FileList | File[] | null) {
     if (!files) return;
     const picked: string[] = [];
