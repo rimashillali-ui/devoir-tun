@@ -701,7 +701,36 @@ function TutorPage() {
                 <div ref={endRef} />
               </div>
 
-              <form onSubmit={send} className="glass p-3 space-y-2 sticky bottom-2">
+              <form
+                onSubmit={send}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (!dragging) setDragging(true);
+                }}
+                onDragLeave={(e) => {
+                  if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+                  setDragging(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragging(false);
+                  void dropFiles(e.dataTransfer?.files ?? null);
+                }}
+                onPaste={(e) => {
+                  const files = Array.from(e.clipboardData?.files ?? []);
+                  if (files.length > 0) void dropFiles(e.clipboardData!.files);
+                }}
+                className={`glass p-3 space-y-2 sticky bottom-2 relative transition-colors ${
+                  dragging ? "border-cyan/60 bg-cyan/5" : ""
+                }`}
+              >
+                {dragging && (
+                  <div className="absolute inset-0 z-10 rounded-xl border-2 border-dashed border-cyan/60 bg-background/70 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+                    <span className="flex items-center gap-2 text-sm font-bold text-cyan">
+                      <ImagePlus className="h-4 w-4" /> Dépose ici tes images ou ton document
+                    </span>
+                  </div>
+                )}
                 {book && (
                   <div className="flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald/5 px-3 py-2 text-xs">
                     <FileText className="h-4 w-4 text-emerald shrink-0" />
