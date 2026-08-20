@@ -28,6 +28,7 @@ const docSchema = z.object({
   subtitle_ar: z.string().nullable().optional(),
   subtitle_fr: z.string().nullable().optional(),
   source_url: z.string().url(),
+  mirror_urls: z.array(z.string().url()).max(5).optional(),
   video_url: z.string().url().nullable().optional(),
   sort_order: z.number().int().optional(),
 });
