@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { resilientRead, unwrap } from "@/lib/resilient-read";
 import { useLang, pickTitle } from "@/lib/i18n";
 import { ARTICLE_SECTIONS, ARABIC_ONLY_SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
