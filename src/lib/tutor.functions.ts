@@ -3,7 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type ChatMsg = { role: "user" | "assistant"; content: string; images?: string[] };
 
-export type TutorInput = { level: string; messages: ChatMsg[] };
+export type TutorInput = { level: string; subject?: string | null; messages: ChatMsg[] };
 
 const LEVEL_IDS = ["9eme", "1sec", "2sc", "3eme", "bac"];
 
@@ -15,12 +15,19 @@ const LEVEL_LABELS: Record<string, string> = {
   bac: "Baccalauréat",
 };
 
-function systemPrompt(level: string, adminPrompt: string) {
+function systemPrompt(level: string, subject: string, adminPrompts: string[], courses: string[]) {
+  const courseBlock = courses.length
+    ? "Voici le cours officiel tunisien de référence pour répondre à l'élève :\n" +
+      courses.join("\n\n---\n\n").slice(0, 40000)
+    : "";
   return [
     "Tu es un professeur émérite au sein du système éducatif tunisien. Tu accompagnes les élèves sur la plateforme Devoiratouna.",
     "Respecte scrupuleusement les programmes du Ministère de l'Éducation Tunisien.",
     `Niveau de l'élève : ${LEVEL_LABELS[level] ?? level}.`,
-    adminPrompt.trim(),
+    subject ? `Matière demandée : ${subject}.` : "",
+    ...adminPrompts.map((p) => p.trim()),
+    courseBlock,
+    courses.length ? "Appuie-toi en priorité sur ce cours de référence ; s'il ne couvre pas la question, reste dans le programme officiel du niveau." : "",
     "Ne donne JAMAIS la solution directement. Guide l'élève étape par étape en lui rappelant les théorèmes, propriétés ou formules requis, et pose-lui des questions pour le faire avancer.",
     "Affiche impérativement les formules mathématiques et équations de manière propre en utilisant le formatage Markdown/LaTeX ($...$ en ligne et $$...$$ en bloc).",
     "Si l'élève envoie une image (photo d'exercice, schéma), lis-la attentivement et appuie-toi dessus.",
@@ -92,18 +99,35 @@ export const askTutor = createServerFn({ method: "POST" })
         ? m.images.filter((u) => typeof u === "string" && u.startsWith("data:image/")).slice(0, 3)
         : [],
     }));
-    return { level: input.level, messages };
+    const subject = typeof input.subject === "string" ? input.subject.slice(0, 40) : "";
+    return { level: input.level, subject, messages };
   })
   .handler(async ({ data, context }) => {
-    const { data: promptRow } = await context.supabase
+    const subjectKeys = data.subject ? ["", data.subject] : [""];
+    const { data: promptRows } = await context.supabase
       .from("tutor_prompts")
-      .select("prompt")
+      .select("subject, prompt")
       .eq("level", data.level)
-      .maybeSingle();
+      .in("subject", subjectKeys);
+    const adminPrompts = (promptRows ?? [])
+      .sort((a, b) => (a.subject ?? "").length - (b.subject ?? "").length)
+      .map((r) => r.prompt ?? "")
+      .filter((p) => p.trim().length > 0);
+
+    let coursesQuery = context.supabase
+      .from("tutor_documents")
+      .select("title, content, subject")
+      .eq("level", data.level)
+      .eq("enabled", true);
+    coursesQuery = data.subject
+      ? coursesQuery.or(`subject.is.null,subject.eq.${data.subject}`)
+      : coursesQuery.is("subject", null);
+    const { data: courseRows } = await coursesQuery.limit(12);
+    const courses = (courseRows ?? []).map((c) => `# ${c.title}\n${c.content}`);
 
     const hasImages = data.messages.some((m) => (m.images?.length ?? 0) > 0);
     const messages: ApiMsg[] = [
-      { role: "system", content: systemPrompt(data.level, promptRow?.prompt ?? "") },
+      { role: "system", content: systemPrompt(data.level, data.subject, adminPrompts, courses) },
       ...toApiMessages(data.messages),
     ];
 
