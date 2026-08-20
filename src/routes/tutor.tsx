@@ -252,6 +252,7 @@ function TutorPage() {
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const bookRef = useRef<HTMLInputElement>(null);
+  const draftLoaded = useRef(false);
 
 
   useEffect(() => {
