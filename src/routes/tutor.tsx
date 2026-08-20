@@ -256,6 +256,18 @@ function TutorPage() {
   }, []);
 
   const loadConvs = useCallback(async () => {
+    // Rétention : l'historique de plus de 30 jours est supprimé automatiquement.
+    const cutoff = retentionCutoffIso();
+    const { data: stale } = await supabase
+      .from("tutor_conversations")
+      .select("id")
+      .lt("updated_at", cutoff);
+    if (stale && stale.length > 0) {
+      await supabase.from("tutor_conversations").delete().lt("updated_at", cutoff);
+      for (const row of stale) dropAttachments(row.id);
+    }
+    purgeExpiredAttachments();
+
     const { data } = await supabase
       .from("tutor_conversations")
       .select("id, title, level, updated_at")
@@ -267,6 +279,28 @@ function TutorPage() {
   useEffect(() => {
     if (authState === "in") void loadConvs();
   }, [authState, loadConvs]);
+
+  // Restaure le brouillon (texte + pièces jointes non envoyées) après un retour sur le site.
+  useEffect(() => {
+    if (authState !== "in" || draftLoaded.current) return;
+    draftLoaded.current = true;
+    const draft = loadDraft();
+    if (!draft) return;
+    setInput(draft.text);
+    setImages(draft.images);
+    if (draft.book)
+      setBook({ ...draft.book, images: [], truncatedPages: 0 } as unknown as ShortDocResult);
+  }, [authState]);
+
+  useEffect(() => {
+    if (!draftLoaded.current) return;
+    saveDraft({
+      text: input,
+      images,
+      book: book ? { name: book.name, pages: book.pages, text: book.text } : null,
+      convId,
+    });
+  }, [input, images, book, convId]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -281,11 +315,14 @@ function TutorPage() {
       .select("role, content, model")
       .eq("conversation_id", c.id)
       .order("created_at", { ascending: true });
+    const att = loadAttachments(c.id);
     setMessages(
-      (data ?? []).map((m) => ({
+      (data ?? []).map((m, i) => ({
         role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
         content: m.content,
         model: m.model,
+        ...(att[String(i)]?.images?.length ? { images: att[String(i)]!.images } : {}),
+        ...(att[String(i)]?.book ? { book: att[String(i)]!.book! } : {}),
       })),
     );
     setLoadingConv(false);
@@ -293,6 +330,7 @@ function TutorPage() {
 
   async function removeConv(id: string) {
     await supabase.from("tutor_conversations").delete().eq("id", id);
+    dropAttachments(id);
     if (convId === id) {
       setConvId(null);
       setMessages([]);
@@ -306,6 +344,7 @@ function TutorPage() {
     setImages([]);
     setBook(null);
     setInput("");
+    clearDraft();
   }
 
   async function pickImages(files: FileList | null) {
