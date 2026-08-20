@@ -140,6 +140,8 @@ function TutorPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [book, setBook] = useState<BookResult | null>(null);
+  const [reading, setReading] = useState<BookProgress | null>(null);
   const [busy, setBusy] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [convs, setConvs] = useState<Conversation[]>([]);
@@ -147,6 +149,8 @@ function TutorPage() {
   const [loadingConv, setLoadingConv] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const bookRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
