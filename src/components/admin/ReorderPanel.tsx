@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { reorderDocuments } from "@/lib/admin.functions";
-import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
+import { LEVELS, getTracks, getSubjects, getDocumentSections, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { toast } from "sonner";
 import { GripVertical, Save } from "lucide-react";
 import {
