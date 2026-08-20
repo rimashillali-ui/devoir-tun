@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { extractTextFromFile } from "@/lib/extract-text";
-import { TUTOR_LEVELS, LEVEL_LABELS, subjectsForLevel, subjectLabel } from "@/lib/tutor-meta";
+import {
+  TUTOR_LEVELS,
+  LEVEL_LABELS,
+  subjectsForLevelTrack,
+  subjectLabel,
+  tracksForLevel,
+  trackLabel,
+} from "@/lib/tutor-meta";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { BookOpen, Loader2, Plus, Trash2, Upload, Pencil, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -9,6 +16,7 @@ import { toast } from "sonner";
 type Doc = {
   id: string;
   level: string;
+  track: string | null;
   subject: string | null;
   title: string;
   file_name: string | null;
@@ -19,6 +27,7 @@ type Doc = {
 const empty = {
   id: "",
   level: TUTOR_LEVELS[0]!,
+  track: "",
   subject: "",
   title: "",
   file_name: "",
@@ -39,7 +48,7 @@ export function TutorCoursesAdmin() {
   async function load() {
     const { data, error } = await supabase
       .from("tutor_documents")
-      .select("id, level, subject, title, file_name, content, enabled")
+      .select("id, level, track, subject, title, file_name, content, enabled")
       .order("level", { ascending: true });
     if (error) toast.error(error.message);
     setDocs((data ?? []) as Doc[]);
@@ -50,7 +59,11 @@ export function TutorCoursesAdmin() {
     void load();
   }, []);
 
-  const subjects = useMemo(() => subjectsForLevel(form.level), [form.level]);
+  const subjects = useMemo(
+    () => subjectsForLevelTrack(form.level, form.track || null),
+    [form.level, form.track],
+  );
+  const tracks = useMemo(() => tracksForLevel(form.level), [form.level]);
   const visible = filterLevel ? docs.filter((d) => d.level === filterLevel) : docs;
 
   function openNew() {
@@ -62,6 +75,7 @@ export function TutorCoursesAdmin() {
     setForm({
       id: d.id,
       level: d.level,
+      track: d.track ?? "",
       subject: d.subject ?? "",
       title: d.title,
       file_name: d.file_name ?? "",
@@ -100,6 +114,7 @@ export function TutorCoursesAdmin() {
     setSaving(true);
     const payload = {
       level: form.level,
+      track: form.track || null,
       subject: form.subject || null,
       title: form.title.trim(),
       file_name: form.file_name || null,
