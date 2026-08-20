@@ -76,7 +76,11 @@ export const translations = {
       devoirs: "الفروض مع الإصلاح",
       texte: "شرح نص",
       conseils: "نصائح",
+      bac_blanc: "بكالوريا تجريبية",
+      concours_blanc: "مناظرة تجريبية",
+      revision: "مراجعة",
     } as Record<string, string>,
+
     terms: { T1: "الثلاثي الأول", T2: "الثلاثي الثاني", T3: "الثلاثي الثالث" } as Record<string, string>,
   },
   fr: {
@@ -156,7 +160,11 @@ export const translations = {
       devoirs: "Devoirs corrigés",
       texte: "شرح نص",
       conseils: "Conseils",
+      bac_blanc: "Bac blanc",
+      concours_blanc: "Concours blanc",
+      revision: "Révision",
     } as Record<string, string>,
+
     terms: { T1: "Trimestre 1", T2: "Trimestre 2", T3: "Trimestre 3" } as Record<string, string>,
   },
 };

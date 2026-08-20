@@ -24,6 +24,9 @@ import {
   Briefcase,
   Zap,
   Cog,
+  Trophy,
+  Repeat,
+
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,7 +36,11 @@ export const SECTION_ICONS: Record<string, LucideIcon> = {
   devoirs: FileCheck2,
   texte: ScrollText,
   conseils: Lightbulb,
+  bac_blanc: GraduationCap,
+  concours_blanc: Trophy,
+  revision: Repeat,
 };
+
 
 export const TRACK_ICONS: Record<string, LucideIcon> = {
   maths: Sigma,

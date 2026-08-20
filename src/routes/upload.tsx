@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
-import { LEVELS, getTracks, getSubjects, SECTIONS } from "@/lib/constants";
+import { LEVELS, getTracks, getSubjects, getSections } from "@/lib/constants";
 import { submitUpload } from "@/lib/uploads.functions";
 import { UploadCloud, LogIn, Loader2, CheckCircle2, FileUp, AlertCircle } from "lucide-react";
 
@@ -42,6 +42,9 @@ const SECTION_LABELS: Record<string, { fr: string; ar: string }> = {
   devoirs: { fr: "Devoirs", ar: "فروض" },
   texte: { fr: "شرح نص", ar: "شرح نص" },
   conseils: { fr: "Conseils", ar: "نصائح" },
+  bac_blanc: { fr: "Bac blanc", ar: "بكالوريا تجريبية" },
+  concours_blanc: { fr: "Concours blanc", ar: "مناظرة تجريبية" },
+  revision: { fr: "Révision", ar: "مراجعة" },
 };
 
 function fileToBase64(file: File) {
@@ -230,7 +233,7 @@ function UploadPage() {
             <div>
               <label className={labelCls}>{ar ? "النوع" : "Type de document"}</label>
               <select value={section} onChange={(e) => setSection(e.target.value)} className={inputCls}>
-                {SECTIONS.map((s) => (
+                {getSections(level).map((s: string) => (
                   <option key={s} value={s}>
                     {ar ? SECTION_LABELS[s].ar : SECTION_LABELS[s].fr}
                   </option>

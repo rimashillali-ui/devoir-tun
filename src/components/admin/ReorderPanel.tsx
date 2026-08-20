@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { reorderDocuments } from "@/lib/admin.functions";
-import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
+import { LEVELS, getTracks, getSubjects, getDocumentSections, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { toast } from "sonner";
 import { GripVertical, Save } from "lucide-react";
 import {
@@ -95,7 +95,7 @@ export function ReorderPanel() {
           </select></div>
         <div><label className={label}>Section</label>
           <select className={input + " w-full"} value={section} onChange={(e) => { setSection(e.target.value); setTerm(""); setExamSlot(""); }}>
-            {SECTIONS.filter((s) => s !== "texte" && s !== "conseils").map((s) => <option key={s} value={s}>{s}</option>)}
+            {getDocumentSections(level).map((s: string) => <option key={s} value={s}>{s}</option>)}
           </select></div>
         {needsTerm && (
           <div><label className={label}>Trimestre</label>

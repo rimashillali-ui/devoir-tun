@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
+import { LEVELS, getTracks, getSubjects, getDocumentSections, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { saveDocument, deleteDocument, listDocumentsAdmin } from "@/lib/admin.functions";
 import { generateDocTitle } from "@/lib/title-generator";
 import { invalidateReads } from "@/lib/resilient-read";
@@ -200,7 +200,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div>
           <label className={label}>Niveau</label>
-          <select className={input} value={d.level} onChange={(e) => setD({ ...d, level: e.target.value, track: null, subject: "" })}>
+          <select className={input} value={d.level} onChange={(e) => setD({ ...d, level: e.target.value, track: null, subject: "", section: getDocumentSections(e.target.value).includes(d.section) ? d.section : "cours" })}>
             {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
@@ -223,7 +223,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         <div>
           <label className={label}>Section</label>
           <select className={input} value={d.section} onChange={(e) => setD({ ...d, section: e.target.value })}>
-            {SECTIONS.filter((s) => s !== "texte" && s !== "conseils").map((s) => <option key={s} value={s}>{s}</option>)}
+            {getDocumentSections(d.level).map((s: string) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
       </div>
