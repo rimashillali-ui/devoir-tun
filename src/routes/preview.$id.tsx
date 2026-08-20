@@ -47,6 +47,8 @@ function PreviewPage() {
         </Link>
       </div>
 
+      <AiTutorPromo />
+
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px] gap-4">
         <div className="space-y-4">
           {ytEmbed && <YoutubeEmbed src={ytEmbed} title={doc.title_fr ?? doc.title_ar} />}
