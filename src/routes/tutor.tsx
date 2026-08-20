@@ -16,6 +16,17 @@ import {
   type ShortDocResult,
   type ShortDocProgress,
 } from "@/lib/short-doc";
+import {
+  loadAttachments,
+  saveAttachment,
+  dropAttachments,
+  purgeExpiredAttachments,
+  loadDraft,
+  saveDraft,
+  clearDraft,
+  retentionCutoffIso,
+  TUTOR_RETENTION_DAYS,
+} from "@/lib/tutor-store";
 
 
 import { subjectsForLevelTrack, subjectLabel, tracksForLevel, trackLabel } from "@/lib/tutor-meta";
@@ -94,12 +105,51 @@ const LEVEL_DESC: Record<string, string> = {
   bac: "Rigueur de l'examen national",
 };
 
-// Normalise les délimiteurs LaTeX \( \) et \[ \] vers $ ... $ / $$ ... $$
+/**
+ * Normalise le LaTeX renvoyé par les différents modèles pour un rendu KaTeX
+ * fiable : délimiteurs \( \) et \[ \], blocs ```math / ```latex, environnements
+ * nus (align, equation…) et $$ collés au texte.
+ */
 function normalizeMath(text: string) {
-  return text
-    .replace(/\\\[([\s\S]*?)\\\]/g, (_m, x) => `\n$$${x}$$\n`)
-    .replace(/\\\(([\s\S]*?)\\\)/g, (_m, x) => `$${x}$`);
+  let out = text;
+
+  // Blocs de code annoncés comme mathématiques → maths en bloc.
+  out = out.replace(/```(?:math|latex|tex)\s*\n([\s\S]*?)```/gi, (_m, x) => `\n$$\n${String(x).trim()}\n$$\n`);
+
+  // Délimiteurs LaTeX classiques.
+  out = out.replace(/\\\[([\s\S]*?)\\\]/g, (_m, x) => `\n$$\n${String(x).trim()}\n$$\n`);
+  out = out.replace(/\\\(([\s\S]*?)\\\)/g, (_m, x) => `$${String(x).trim()}$`);
+
+  // Environnements mathématiques non entourés de $$.
+  out = out.replace(
+    /(^|\n)[ \t]*(\\begin\{(?:align|align\*|aligned|equation|equation\*|gather|gather\*|cases|array|pmatrix|bmatrix|vmatrix|matrix)\}[\s\S]*?\\end\{[a-z*]+\})/gi,
+    (_m, pre, body) => `${pre}\n$$\n${String(body).trim()}\n$$\n`,
+  );
+
+  // $$ collés au texte → sur leur propre ligne (sinon KaTeX ne détecte rien).
+  out = out.replace(/([^\n$])\$\$/g, "$1\n$$").replace(/\$\$([^\n$])/g, "$$\n$1");
+
+  // Espaces insécables et symboles souvent mal échappés dans les formules.
+  out = out.replace(/\u00a0/g, " ");
+
+  return out;
 }
+
+const KATEX_OPTIONS = {
+  throwOnError: false,
+  strict: false as const,
+  trust: false,
+  output: "htmlAndMathml" as const,
+  macros: {
+    "\\R": "\\mathbb{R}",
+    "\\N": "\\mathbb{N}",
+    "\\Z": "\\mathbb{Z}",
+    "\\Q": "\\mathbb{Q}",
+    "\\C": "\\mathbb{C}",
+    "\\vect": "\\overrightarrow{#1}",
+    "\\diff": "\\mathrm{d}",
+  },
+};
 
 function fileToDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -165,8 +215,8 @@ function Bubble({ m }: { m: Msg }) {
         {mine ? (
           <p className="whitespace-pre-wrap">{m.content}</p>
         ) : (
-          <div className="prose prose-sm prose-invert max-w-none prose-p:my-2 prose-headings:mt-3 prose-headings:mb-1 prose-pre:bg-black/40">
-            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+          <div className="tutor-math prose prose-sm prose-invert max-w-none prose-p:my-2 prose-headings:mt-3 prose-headings:mb-1 prose-pre:bg-black/40">
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTIONS]]}>
               {normalizeMath(m.content)}
             </ReactMarkdown>
           </div>
@@ -202,6 +252,7 @@ function TutorPage() {
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const bookRef = useRef<HTMLInputElement>(null);
+  const draftLoaded = useRef(false);
 
 
   useEffect(() => {
@@ -217,6 +268,18 @@ function TutorPage() {
   }, []);
 
   const loadConvs = useCallback(async () => {
+    // Rétention : l'historique de plus de 30 jours est supprimé automatiquement.
+    const cutoff = retentionCutoffIso();
+    const { data: stale } = await supabase
+      .from("tutor_conversations")
+      .select("id")
+      .lt("updated_at", cutoff);
+    if (stale && stale.length > 0) {
+      await supabase.from("tutor_conversations").delete().lt("updated_at", cutoff);
+      for (const row of stale) dropAttachments(row.id);
+    }
+    purgeExpiredAttachments();
+
     const { data } = await supabase
       .from("tutor_conversations")
       .select("id, title, level, updated_at")
@@ -228,6 +291,28 @@ function TutorPage() {
   useEffect(() => {
     if (authState === "in") void loadConvs();
   }, [authState, loadConvs]);
+
+  // Restaure le brouillon (texte + pièces jointes non envoyées) après un retour sur le site.
+  useEffect(() => {
+    if (authState !== "in" || draftLoaded.current) return;
+    draftLoaded.current = true;
+    const draft = loadDraft();
+    if (!draft) return;
+    setInput(draft.text);
+    setImages(draft.images);
+    if (draft.book)
+      setBook({ ...draft.book, images: [], truncatedPages: 0 } as unknown as ShortDocResult);
+  }, [authState]);
+
+  useEffect(() => {
+    if (!draftLoaded.current) return;
+    saveDraft({
+      text: input,
+      images,
+      book: book ? { name: book.name, pages: book.pages, text: book.text } : null,
+      convId,
+    });
+  }, [input, images, book, convId]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -242,11 +327,14 @@ function TutorPage() {
       .select("role, content, model")
       .eq("conversation_id", c.id)
       .order("created_at", { ascending: true });
+    const att = loadAttachments(c.id);
     setMessages(
-      (data ?? []).map((m) => ({
+      (data ?? []).map((m, i) => ({
         role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
         content: m.content,
         model: m.model,
+        ...(att[String(i)]?.images?.length ? { images: att[String(i)]!.images } : {}),
+        ...(att[String(i)]?.book ? { book: att[String(i)]!.book! } : {}),
       })),
     );
     setLoadingConv(false);
@@ -254,6 +342,7 @@ function TutorPage() {
 
   async function removeConv(id: string) {
     await supabase.from("tutor_conversations").delete().eq("id", id);
+    dropAttachments(id);
     if (convId === id) {
       setConvId(null);
       setMessages([]);
@@ -267,6 +356,7 @@ function TutorPage() {
     setImages([]);
     setBook(null);
     setInput("");
+    clearDraft();
   }
 
   async function pickImages(files: FileList | null) {
@@ -334,10 +424,13 @@ function TutorPage() {
       book: book ? { name: book.name, pages: book.pages, text: book.text } : undefined,
     };
     const history = [...messages, userMsg];
+    const userIndex = history.length - 1;
     setMessages(history);
     setInput("");
     setImages([]);
     setBook(null);
+    clearDraft();
+
 
     setBusy(true);
     const notice = setTimeout(() => setSwitching(true), 6000);
@@ -364,6 +457,13 @@ function TutorPage() {
         content: text,
         image_count: userMsg.images?.length ?? 0,
       });
+
+      // Conserve localement les pièces jointes pour les retrouver au retour.
+      saveAttachment(cid, userIndex, {
+        images: userMsg.images,
+        book: userMsg.book ?? null,
+      });
+
 
       const res = await run({ data: { level, subject, track, messages: history } });
       if (res.fellBack) setSwitching(true);
@@ -474,6 +574,9 @@ function TutorPage() {
         <aside className="glass p-3 space-y-2 lg:max-h-[70vh] overflow-y-auto order-2 lg:order-1 hidden lg:block">
           <p className="text-xs font-bold text-muted-foreground px-1 flex items-center gap-1.5">
             <MessageSquare className="h-3.5 w-3.5" /> Mon historique
+          </p>
+          <p className="px-1 text-[10px] text-muted-foreground">
+            Conservé {TUTOR_RETENTION_DAYS} jours, puis supprimé automatiquement.
           </p>
           {convs.length === 0 && <p className="text-xs text-muted-foreground px-1">Aucune discussion enregistrée.</p>}
           {convs.map((c) => (

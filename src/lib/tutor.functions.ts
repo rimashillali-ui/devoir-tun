@@ -149,14 +149,32 @@ function buildAttempts(opts: { vision: boolean; keys: { lovable?: string; groq?:
   };
 
   if (opts.vision) {
+    // Vision : Gemini (rapide) puis Qwen3-VL (roi de la géométrie), Grok, Kimi, GPT.
     push("lovable", ["google/gemini-3.7-flash", "google/gemini-2.5-flash"]);
-    push("openrouter", ["google/gemini-2.5-flash", "x-ai/grok-4.3", "openai/gpt-4.1-mini"]);
+    push("openrouter", [
+      "qwen/qwen3-vl-235b-a22b-instruct",
+      "qwen/qwen3-vl-plus",
+      "google/gemini-2.5-flash",
+      "x-ai/grok-4.3",
+      "moonshotai/kimi-k3",
+      "moonshotai/kimi-k2",
+      "openai/gpt-4.1-mini",
+    ]);
     return list;
   }
 
+  // Texte : raisonnement scientifique (DeepSeek), Qwen3 Max, Kimi K3 en secours.
   push("groq", ["openai/gpt-oss-120b", "qwen/qwen3.6-27b"]);
   push("lovable", ["google/gemini-3.7-flash", "google/gemini-2.5-flash"]);
-  push("openrouter", ["deepseek/deepseek-chat-v3.1", "x-ai/grok-4.3", "openai/gpt-4.1-mini"]);
+  push("openrouter", [
+    "deepseek/deepseek-v4-flash",
+    "deepseek/deepseek-chat-v3.1",
+    "qwen/qwen3-max",
+    "moonshotai/kimi-k3",
+    "moonshotai/kimi-k2",
+    "x-ai/grok-4.3",
+    "openai/gpt-4.1-mini",
+  ]);
   return list;
 }
 
