@@ -8,6 +8,8 @@ import "katex/dist/katex.min.css";
 import { supabase } from "@/integrations/supabase/client";
 import { askTutor } from "@/lib/tutor.functions";
 import { LEVELS } from "@/lib/constants";
+import { readBook, type BookResult, type BookProgress } from "@/lib/pdf-book";
+
 import { subjectsForLevelTrack, subjectLabel, tracksForLevel, trackLabel } from "@/lib/tutor-meta";
 import { BackButton } from "@/components/BackButton";
 import {
