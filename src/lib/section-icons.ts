@@ -24,6 +24,9 @@ import {
   Briefcase,
   Zap,
   Cog,
+  Trophy,
+  Repeat,
+
   type LucideIcon,
 } from "lucide-react";
 
