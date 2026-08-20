@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
+import { LEVELS, getTracks, getSubjects, getDocumentSections, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { saveDocument, deleteDocument, listDocumentsAdmin } from "@/lib/admin.functions";
 import { generateDocTitle } from "@/lib/title-generator";
 import { invalidateReads } from "@/lib/resilient-read";
