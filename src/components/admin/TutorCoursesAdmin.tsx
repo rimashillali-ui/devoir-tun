@@ -97,16 +97,24 @@ export function TutorCoursesAdmin() {
   async function onFile(file: File | undefined) {
     if (!file) return;
     setExtracting(true);
+    setBook(null);
     try {
+      const isPdf = file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
+      if (isPdf) {
+        const pages = await countPages(file);
+        setBook({ file, pages });
+        setRange({ from: 1, to: Math.min(20, pages) });
+      }
       const text = await extractTextFromFile(file);
-      if (!text) throw new Error("Aucun texte détecté (PDF scanné ?)");
       setForm((f) => ({
         ...f,
-        content: text.slice(0, 200000),
+        content: text ? text.slice(0, 200000) : f.content,
         file_name: file.name,
         title: f.title || file.name.replace(/\.[^.]+$/, ""),
       }));
-      toast.success(`Texte extrait (${text.length} caractères)`);
+      if (text) toast.success(`Texte extrait (${text.length} caractères)`);
+      else if (isPdf) toast.info("Aucun texte détecté : utilise la lecture par vision ci-dessous.");
+      else throw new Error("Fichier vide");
     } catch (e: any) {
       toast.error(e?.message ?? "Extraction impossible");
     } finally {
@@ -114,6 +122,43 @@ export function TutorCoursesAdmin() {
       if (fileRef.current) fileRef.current.value = "";
     }
   }
+
+  /** Lecture par vision : rend les pages en images et les fait transcrire par l'IA. */
+  async function runVision() {
+    if (!book) return;
+    const from = Math.max(1, Math.min(book.pages, Math.trunc(range.from) || 1));
+    const to = Math.max(from, Math.min(book.pages, Math.trunc(range.to) || from));
+    if (to - from + 1 > 60) {
+      toast.error("60 pages maximum par passe. Fais le livre par tranches.");
+      return;
+    }
+    setVision({ running: true, label: "Préparation des pages…" });
+    const chunks: string[] = [];
+    try {
+      const BATCH = 5;
+      for (let start = from; start <= to; start += BATCH) {
+        const end = Math.min(to, start + BATCH - 1);
+        setVision({ running: true, label: `Rendu des pages ${start}–${end}…` });
+        const pages = await renderBookPages(book.file, { fromPage: start, toPage: end });
+        if (pages.length === 0) continue;
+        setVision({ running: true, label: `Lecture IA des pages ${start}–${end}…` });
+        const res = await transcribe({ data: { pages, title: form.title || book.file.name } });
+        if (res?.text) chunks.push(res.text.trim());
+      }
+      if (chunks.length === 0) throw new Error("Aucun contenu transcrit");
+      const added = `\n\n${chunks.join("\n\n")}`;
+      setForm((f) => ({ ...f, content: (f.content + added).slice(0, 400000) }));
+      toast.success(`Vision terminée : pages ${from}–${to} ajoutées (${added.length} caractères)`);
+    } catch (e: any) {
+      if (chunks.length > 0) {
+        setForm((f) => ({ ...f, content: (f.content + "\n\n" + chunks.join("\n\n")).slice(0, 400000) }));
+      }
+      toast.error(e?.message ?? "Lecture par vision impossible");
+    } finally {
+      setVision({ running: false, label: "" });
+    }
+  }
+
 
   async function save() {
     if (!form.title.trim() || !form.content.trim()) {
