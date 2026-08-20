@@ -1,15 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { SECTIONS, ARABIC_ONLY_SECTIONS, TEXTE_ALLOWED_SUBJECTS } from "@/lib/constants";
+import { ARABIC_ONLY_SECTIONS, getSections } from "@/lib/constants";
 import { useLang } from "@/lib/i18n";
 import { sectionIcon } from "@/lib/section-icons";
 import { BackButton } from "@/components/BackButton";
 
 export function SectionGrid({ level, track, subject }: { level: string; track?: string; subject: string }) {
   const { t } = useLang();
-  const sections = SECTIONS.filter((s) => {
-    if (s === "texte") return TEXTE_ALLOWED_SUBJECTS.has(subject);
-    return true;
-  });
+  const sections = getSections(level, subject);
+
   const backTo = track ? "/n/$level/f/$track" : "/n/$level";
   const backParams = track ? { level, track } : { level };
   return (
