@@ -458,6 +458,13 @@ function TutorPage() {
         image_count: userMsg.images?.length ?? 0,
       });
 
+      // Conserve localement les pièces jointes pour les retrouver au retour.
+      saveAttachment(cid, userIndex, {
+        images: userMsg.images,
+        book: userMsg.book ?? null,
+      });
+
+
       const res = await run({ data: { level, subject, track, messages: history } });
       if (res.fellBack) setSwitching(true);
       setMessages([...history, { role: "assistant", content: res.content, model: res.model }]);
