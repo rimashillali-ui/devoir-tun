@@ -424,10 +424,13 @@ function TutorPage() {
       book: book ? { name: book.name, pages: book.pages, text: book.text } : undefined,
     };
     const history = [...messages, userMsg];
+    const userIndex = history.length - 1;
     setMessages(history);
     setInput("");
     setImages([]);
     setBook(null);
+    clearDraft();
+
 
     setBusy(true);
     const notice = setTimeout(() => setSwitching(true), 6000);
