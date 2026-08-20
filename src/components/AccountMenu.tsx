@@ -28,6 +28,7 @@ export function AccountMenu() {
       icon: Sparkles,
       title: lang === "ar" ? "المعلّم الذكي" : "Tuteur IA",
       desc: lang === "ar" ? "شرح التمارين خطوة بخطوة" : "Explications pas à pas",
+      accent: "cyan",
     },
     {
       to: "/upload" as const,
@@ -35,6 +36,7 @@ export function AccountMenu() {
       icon: UploadCloud,
       title: lang === "ar" ? "طلب إضافة ملف" : "Demander un upload",
       desc: lang === "ar" ? "أرسل لنا وثيقتك" : "Envoie-nous ton document",
+      accent: "cyan",
     },
     {
       to: "/quiz/$level/$subject" as const,
@@ -42,42 +44,49 @@ export function AccountMenu() {
       icon: ListChecks,
       title: lang === "ar" ? "الاختبارات" : "Quiz",
       desc: lang === "ar" ? "اختبر معارفك" : "Teste tes connaissances",
+      accent: "cyan",
     },
   ];
+
+  const scrollToLevels = () => {
+    document.getElementById("levels")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <section>
       <h2 className="text-2xl font-bold mb-4">{lang === "ar" ? "مساحتي" : "Mon espace"}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {items.map((it) => (
-          <Link
-            key={it.title}
-            to={it.to}
-            params={it.params as never}
-            className="glass glass-hover p-5 flex items-center gap-3"
-          >
-            <div className="p-2.5 rounded-lg bg-cyan/10">
-              <it.icon className="h-6 w-6 text-cyan" />
-            </div>
-            <div>
-              <div className="font-bold">{it.title}</div>
-              <div className="text-sm text-muted-foreground">{it.desc}</div>
-            </div>
-          </Link>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {items.map((it) => {
+          const accentBg = it.accent === "cyan" ? "bg-cyan/10" : "bg-indigo/10";
+          const accentText = it.accent === "cyan" ? "text-cyan" : "text-indigo";
+          return (
+            <Link
+              key={it.title}
+              to={it.to}
+              params={it.params as never}
+              className="glass glass-hover p-6 flex items-center gap-4 transition-transform duration-200 hover:-translate-y-1"
+            >
+              <div className={`p-3 rounded-xl ${accentBg} shrink-0`}>
+                <it.icon className={`h-7 w-7 ${accentText}`} />
+              </div>
+              <div className="min-w-0">
+                <div className="font-bold truncate">{it.title}</div>
+                <div className="text-sm text-muted-foreground truncate">{it.desc}</div>
+              </div>
+            </Link>
+          );
+        })}
         <button
           type="button"
-          onClick={() =>
-            document.getElementById("levels")?.scrollIntoView({ behavior: "smooth", block: "start" })
-          }
-          className="glass glass-hover p-5 flex items-center gap-3 text-start"
+          onClick={scrollToLevels}
+          className="glass glass-hover p-6 flex items-center gap-4 text-start transition-transform duration-200 hover:-translate-y-1"
         >
-          <div className="p-2.5 rounded-lg bg-indigo/10">
-            <GraduationCap className="h-6 w-6 text-indigo" />
+          <div className="p-3 rounded-xl bg-indigo/10 shrink-0">
+            <GraduationCap className="h-7 w-7 text-indigo" />
           </div>
-          <div>
-            <div className="font-bold">{lang === "ar" ? "اختر مستواك" : "Choisir un niveau"}</div>
-            <div className="text-sm text-muted-foreground">
+          <div className="min-w-0">
+            <div className="font-bold truncate">{lang === "ar" ? "اختر مستواك" : "Choisir un niveau"}</div>
+            <div className="text-sm text-muted-foreground truncate">
               {lang === "ar" ? "انزل إلى قائمة المستويات" : "Descendre vers les niveaux"}
             </div>
           </div>
@@ -85,5 +94,4 @@ export function AccountMenu() {
       </div>
     </section>
   );
-
 }
