@@ -68,20 +68,35 @@ function cleanReasoning(text: string) {
 
 type ApiMsg = { role: string; content: unknown };
 
+function bookBlock(book: BookAttachment) {
+  return [
+    `Document joint par l'élève : « ${book.name} » (${book.pages} page(s)).`,
+    book.text
+      ? `Contenu intégral extrait du document :\n${book.text}`
+      : "Le document est scanné : son contenu est fourni sous forme d'images de pages.",
+    "Utilise ce document comme source principale. Cite les numéros de page ([Page n]) quand tu t'y réfères.",
+  ].join("\n");
+}
+
 function toApiMessages(messages: ChatMsg[]): ApiMsg[] {
   return messages.map((m) => {
-    if (m.role === "user" && m.images && m.images.length > 0) {
+    const imgs = m.images ?? [];
+    if (m.role === "user" && (imgs.length > 0 || m.book)) {
+      const text = [m.book ? bookBlock(m.book) : "", m.content || (m.book ? "Analyse ce document." : "Analyse cette image.")]
+        .filter(Boolean)
+        .join("\n\n");
       return {
         role: "user",
         content: [
-          { type: "text", text: m.content || "Analyse cette image." },
-          ...m.images.map((url) => ({ type: "image_url", image_url: { url } })),
+          { type: "text", text },
+          ...imgs.map((url) => ({ type: "image_url", image_url: { url } })),
         ],
       };
     }
     return { role: m.role, content: m.content };
   });
 }
+
 
 async function callOpenAICompatible(opts: {
   url: string;
