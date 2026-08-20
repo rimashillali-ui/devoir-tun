@@ -293,12 +293,13 @@ export const revokeAdmin = createServerFn({ method: "POST" })
 // ===== Tuteur IA : prompts par niveau =====
 export const saveTutorPrompt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { level: string; subject?: string; prompt: string }) =>
+  .inputValidator((d: { level: string; subject?: string; track?: string; prompt: string }) =>
     z
       .object({
         level: z.string().min(1).max(20),
         subject: z.string().max(40).optional().default(""),
-        prompt: z.string().max(8000),
+        track: z.string().max(40).optional().default(""),
+        prompt: z.string().max(20000),
       })
       .parse(d),
   )
@@ -308,10 +309,11 @@ export const saveTutorPrompt = createServerFn({ method: "POST" })
       {
         level: data.level,
         subject: data.subject ?? "",
+        track: data.track ?? "",
         prompt: data.prompt,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "level,subject" },
+      { onConflict: "level,subject,track" },
     );
     if (error) throw new Error(error.message);
     return { ok: true };

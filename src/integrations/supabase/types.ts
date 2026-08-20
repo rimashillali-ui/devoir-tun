@@ -324,6 +324,7 @@ export type Database = {
           level: string
           subject: string | null
           title: string
+          track: string | null
           updated_at: string
         }
         Insert: {
@@ -335,6 +336,7 @@ export type Database = {
           level: string
           subject?: string | null
           title: string
+          track?: string | null
           updated_at?: string
         }
         Update: {
@@ -346,6 +348,7 @@ export type Database = {
           level?: string
           subject?: string | null
           title?: string
+          track?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -396,18 +399,21 @@ export type Database = {
           level: string
           prompt: string
           subject: string
+          track: string
           updated_at: string
         }
         Insert: {
           level: string
           prompt?: string
           subject?: string
+          track?: string
           updated_at?: string
         }
         Update: {
           level?: string
           prompt?: string
           subject?: string
+          track?: string
           updated_at?: string
         }
         Relationships: []

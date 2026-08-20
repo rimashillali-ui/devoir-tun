@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { extractTextFromFile } from "@/lib/extract-text";
-import { TUTOR_LEVELS, LEVEL_LABELS, subjectsForLevel, subjectLabel } from "@/lib/tutor-meta";
+import {
+  TUTOR_LEVELS,
+  LEVEL_LABELS,
+  subjectsForLevelTrack,
+  subjectLabel,
+  tracksForLevel,
+  trackLabel,
+} from "@/lib/tutor-meta";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { BookOpen, Loader2, Plus, Trash2, Upload, Pencil, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -9,6 +16,7 @@ import { toast } from "sonner";
 type Doc = {
   id: string;
   level: string;
+  track: string | null;
   subject: string | null;
   title: string;
   file_name: string | null;
@@ -19,6 +27,7 @@ type Doc = {
 const empty = {
   id: "",
   level: TUTOR_LEVELS[0]!,
+  track: "",
   subject: "",
   title: "",
   file_name: "",
@@ -39,7 +48,7 @@ export function TutorCoursesAdmin() {
   async function load() {
     const { data, error } = await supabase
       .from("tutor_documents")
-      .select("id, level, subject, title, file_name, content, enabled")
+      .select("id, level, track, subject, title, file_name, content, enabled")
       .order("level", { ascending: true });
     if (error) toast.error(error.message);
     setDocs((data ?? []) as Doc[]);
@@ -50,7 +59,11 @@ export function TutorCoursesAdmin() {
     void load();
   }, []);
 
-  const subjects = useMemo(() => subjectsForLevel(form.level), [form.level]);
+  const subjects = useMemo(
+    () => subjectsForLevelTrack(form.level, form.track || null),
+    [form.level, form.track],
+  );
+  const tracks = useMemo(() => tracksForLevel(form.level), [form.level]);
   const visible = filterLevel ? docs.filter((d) => d.level === filterLevel) : docs;
 
   function openNew() {
@@ -62,6 +75,7 @@ export function TutorCoursesAdmin() {
     setForm({
       id: d.id,
       level: d.level,
+      track: d.track ?? "",
       subject: d.subject ?? "",
       title: d.title,
       file_name: d.file_name ?? "",
@@ -100,6 +114,7 @@ export function TutorCoursesAdmin() {
     setSaving(true);
     const payload = {
       level: form.level,
+      track: form.track || null,
       subject: form.subject || null,
       title: form.title.trim(),
       file_name: form.file_name || null,
@@ -170,6 +185,7 @@ export function TutorCoursesAdmin() {
               <p className="font-bold text-sm">{d.title}</p>
               <p className="text-xs text-muted-foreground">
                 {LEVEL_LABELS[d.level] ?? d.level} ·{" "}
+                {d.track ? trackLabel(d.track) : "toutes filières"} ·{" "}
                 {d.subject ? subjectLabel(d.subject) : "toutes les matières"} · {d.content.length} car.
                 {d.file_name ? ` · ${d.file_name}` : ""}
               </p>
@@ -198,17 +214,35 @@ export function TutorCoursesAdmin() {
       {open && (
         <AdminModal title={form.id ? "Modifier le cours IA" : "Nouveau cours IA"} onClose={() => setOpen(false)}>
           <div className="space-y-3">
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="grid sm:grid-cols-3 gap-3">
               <label className="text-sm space-y-1">
                 <span className="text-xs text-muted-foreground">Niveau</span>
                 <select
                   value={form.level}
-                  onChange={(e) => setForm({ ...form, level: e.target.value, subject: "" })}
+                  onChange={(e) => setForm({ ...form, level: e.target.value, track: "", subject: "" })}
                   className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm"
                 >
                   {TUTOR_LEVELS.map((l) => (
                     <option key={l} value={l}>
                       {LEVEL_LABELS[l] ?? l}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm space-y-1">
+                <span className="text-xs text-muted-foreground">Filière</span>
+                <select
+                  value={form.track}
+                  onChange={(e) => setForm({ ...form, track: e.target.value, subject: "" })}
+                  disabled={tracks.length === 0}
+                  className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm disabled:opacity-40"
+                >
+                  <option value="">
+                    {tracks.length === 0 ? "Pas de filière" : "Toutes les filières"}
+                  </option>
+                  {tracks.map((tr) => (
+                    <option key={tr} value={tr}>
+                      {trackLabel(tr)}
                     </option>
                   ))}
                 </select>
