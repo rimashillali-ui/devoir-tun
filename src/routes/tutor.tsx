@@ -53,7 +53,14 @@ export const Route = createFileRoute("/tutor")({
   component: TutorPage,
 });
 
-type Msg = { role: "user" | "assistant"; content: string; images?: string[]; model?: string | null };
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+  images?: string[];
+  model?: string | null;
+  book?: { name: string; pages: number; text: string };
+};
+
 
 /** Nom lisible du modèle affiché sous chaque réponse. */
 function modelLabel(model?: string | null) {
