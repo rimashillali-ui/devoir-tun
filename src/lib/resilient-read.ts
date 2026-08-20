@@ -8,13 +8,59 @@ const cache = new Map<string, Entry>();
 const inflight = new Map<string, Promise<unknown>>();
 
 const DEFAULT_TTL = 60_000; // 1 minute
+const STORE_PREFIX = "dvt.cache.v1:"; // stockage navigateur (localStorage) versionné
 const STALE_MAX = 30 * 60_000; // on accepte une valeur périmée jusqu'à 30 min en secours
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+// --- Persistance navigateur -------------------------------------------------
+// On utilise localStorage plutôt que les cookies : même effet (survit au
+// rechargement, zéro requête) sans alourdir chaque requête HTTP de 4 Ko
+// d'en-têtes. Aucune donnée personnelle n'y est stockée : uniquement des
+// listes publiques (documents, bannière, annonces, pages, quiz).
+const canStore = () => typeof window !== "undefined" && !!window.localStorage;
+
+function readStore(key: string): Entry | null {
+  if (!canStore()) return null;
+  try {
+    const raw = window.localStorage.getItem(STORE_PREFIX + key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Entry;
+    if (typeof parsed?.at !== "number") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeStore(key: string, entry: Entry) {
+  if (!canStore()) return;
+  try {
+    window.localStorage.setItem(STORE_PREFIX + key, JSON.stringify(entry));
+  } catch {
+    // quota atteint : on purge notre espace puis on abandonne silencieusement
+    try {
+      for (const k of Object.keys(window.localStorage)) {
+        if (k.startsWith(STORE_PREFIX)) window.localStorage.removeItem(k);
+      }
+    } catch { /* ignore */ }
+  }
+}
+
+function clearStore(prefix?: string) {
+  if (!canStore()) return;
+  try {
+    for (const k of Object.keys(window.localStorage)) {
+      if (!k.startsWith(STORE_PREFIX)) continue;
+      if (!prefix || k.slice(STORE_PREFIX.length).startsWith(prefix)) window.localStorage.removeItem(k);
+    }
+  } catch { /* ignore */ }
+}
+
 export function invalidateReads(prefix?: string) {
+  clearStore(prefix);
   if (!prefix) return cache.clear();
   for (const key of [...cache.keys()]) if (key.startsWith(prefix)) cache.delete(key);
 }
@@ -28,12 +74,20 @@ export function invalidateReads(prefix?: string) {
 export async function resilientRead<T>(
   key: string,
   fn: () => Promise<T>,
-  opts: { ttlMs?: number; retries?: number } = {},
+  opts: { ttlMs?: number; retries?: number; persist?: boolean } = {},
 ): Promise<T> {
   const ttl = opts.ttlMs ?? DEFAULT_TTL;
   const retries = opts.retries ?? 2;
+  const persist = opts.persist !== false; // persistant par défaut
 
-  const hit = cache.get(key);
+  let hit = cache.get(key);
+  if (!hit && persist) {
+    const stored = readStore(key);
+    if (stored) {
+      cache.set(key, stored);
+      hit = stored;
+    }
+  }
   if (hit && Date.now() - hit.at < ttl) return hit.value as T;
 
   const running = inflight.get(key);
@@ -44,7 +98,9 @@ export async function resilientRead<T>(
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const value = await fn();
-        cache.set(key, { value, at: Date.now() });
+        const entry: Entry = { value, at: Date.now() };
+        cache.set(key, entry);
+        if (persist) writeStore(key, entry);
         return value;
       } catch (err) {
         lastError = err;
