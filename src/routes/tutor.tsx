@@ -578,10 +578,11 @@ function TutorPage() {
                   <input
                     ref={bookRef}
                     type="file"
-                    accept="application/pdf,.pdf"
+                    accept="application/pdf,.pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     className="hidden"
                     onChange={(e) => void pickBook(e.target.files?.[0] ?? null)}
                   />
+
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
