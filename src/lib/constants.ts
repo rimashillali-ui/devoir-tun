@@ -44,12 +44,44 @@ export function getSubjects(level: string, track?: string | null): string[] {
   return SUBJECTS_BY_LEVEL_TRACK[key] ?? [];
 }
 
-export const SECTIONS = ["cours", "series", "devoirs", "texte", "conseils"] as const;
+export const SECTIONS = [
+  "cours",
+  "series",
+  "devoirs",
+  "texte",
+  "conseils",
+  "bac_blanc",
+  "concours_blanc",
+  "revision",
+] as const;
 export type Section = (typeof SECTIONS)[number];
 
 export const ARTICLE_SECTIONS = new Set<string>(["texte", "conseils"]);
 export const ARABIC_ONLY_SECTIONS = new Set<string>(["texte"]);
 export const TEXTE_ALLOWED_SUBJECTS = new Set<string>(["arabe", "francais"]);
+
+/** Sections réservées à certains niveaux. Absent = disponible partout. */
+export const SECTION_LEVELS: Record<string, string[]> = {
+  bac_blanc: ["bac"],
+  concours_blanc: ["9eme"],
+  revision: ["9eme", "bac"],
+};
+
+/** Sections disponibles pour un niveau (et une matière si fournie). */
+export function getSections(level: string, subject?: string | null): string[] {
+  return SECTIONS.filter((s) => {
+    const levels = SECTION_LEVELS[s];
+    if (levels && !levels.includes(level)) return false;
+    if (s === "texte" && subject) return TEXTE_ALLOWED_SUBJECTS.has(subject);
+    return true;
+  });
+}
+
+/** Sections de type documents (PDF) pour un niveau. */
+export function getDocumentSections(level: string): string[] {
+  return getSections(level).filter((s) => !ARTICLE_SECTIONS.has(s));
+}
+
 
 export const TERMS = ["T1", "T2", "T3"] as const;
 export type Term = (typeof TERMS)[number];
