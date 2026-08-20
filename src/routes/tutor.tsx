@@ -308,6 +308,9 @@ function TutorPage() {
   const [images, setImages] = useState<string[]>([]);
   const [book, setBook] = useState<ShortDocResult | null>(null);
   const [reading, setReading] = useState<ShortDocProgress | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<{ name: string; pages: number; text: string } | null>(null);
+
 
   const [busy, setBusy] = useState(false);
   const [switching, setSwitching] = useState(false);
