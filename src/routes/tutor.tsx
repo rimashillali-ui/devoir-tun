@@ -452,6 +452,25 @@ function TutorPage() {
               </div>
 
               <form onSubmit={send} className="glass p-3 space-y-2 sticky bottom-2">
+                {book && (
+                  <div className="flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald/5 px-3 py-2 text-xs">
+                    <BookOpen className="h-4 w-4 text-emerald shrink-0" />
+                    <span className="flex-1 truncate">
+                      <span className="font-bold">{book.name}</span> · {book.pages} page(s)
+                      {book.images.length > 0 && ` · ${book.images.length} page(s) scannée(s) en vision`}
+                      {book.skippedScans > 0 && ` · ${book.skippedScans} page(s) scannée(s) ignorée(s)`}
+                    </span>
+                    <button type="button" aria-label="Retirer le document" onClick={() => setBook(null)}>
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+                {reading && (
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald" /> Lecture du livre… page{" "}
+                    {reading.page}/{reading.total}
+                  </p>
+                )}
                 {images.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {images.map((src, i) => (
@@ -478,6 +497,13 @@ function TutorPage() {
                     className="hidden"
                     onChange={(e) => void pickImages(e.target.files)}
                   />
+                  <input
+                    ref={bookRef}
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="hidden"
+                    onChange={(e) => void pickBook(e.target.files?.[0] ?? null)}
+                  />
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
@@ -485,6 +511,15 @@ function TutorPage() {
                     aria-label="Joindre une image"
                   >
                     <ImagePlus className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => bookRef.current?.click()}
+                    disabled={!!reading}
+                    className="h-11 w-11 rounded-lg border border-white/10 flex items-center justify-center hover:border-emerald/40 disabled:opacity-40"
+                    aria-label="Joindre un livre PDF complet"
+                  >
+                    {reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
                   </button>
                   <textarea
                     value={input}
@@ -501,7 +536,7 @@ function TutorPage() {
                   />
                   <button
                     type="submit"
-                    disabled={busy || (!input.trim() && images.length === 0)}
+                    disabled={busy || !!reading || (!input.trim() && images.length === 0 && !book)}
                     className="bg-cyan text-background font-bold h-11 w-11 rounded-lg flex items-center justify-center disabled:opacity-40"
                     aria-label="Envoyer"
                   >
@@ -509,10 +544,11 @@ function TutorPage() {
                   </button>
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                  <ImageIcon className="h-3 w-3" /> Jusqu'à 3 images (4 Mo max chacune) · l'assistant guide sans
-                  donner la solution finale.
+                  <ImageIcon className="h-3 w-3" /> Jusqu'à 3 images (4 Mo max) ou un livre PDF complet (jusqu'à 60 Mo,
+                  toutes les pages sont lues) · l'assistant guide sans donner la solution finale.
                 </p>
               </form>
+
             </>
           )}
         </div>
