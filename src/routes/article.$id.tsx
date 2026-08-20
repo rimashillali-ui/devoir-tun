@@ -1,5 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { resilientRead, unwrap } from "@/lib/resilient-read";
 import { useLang, pickTitle } from "@/lib/i18n";
 import { ARABIC_ONLY_SECTIONS } from "@/lib/constants";
 

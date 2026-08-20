@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { resilientRead, unwrap } from "@/lib/resilient-read";
 import { useLang, pickTitle } from "@/lib/i18n";
 import { YoutubeEmbed } from "@/components/Media";
 import { PdfCanvasViewer } from "@/components/PdfCanvasViewer";
