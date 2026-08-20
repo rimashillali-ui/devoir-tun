@@ -105,6 +105,7 @@ async function callOpenAICompatible(opts: {
   model: string;
   body: unknown;
   extraHeaders?: Record<string, string>;
+  timeoutMs?: number;
 }) {
   const res = await fetch(opts.url, {
     method: "POST",
@@ -114,6 +115,7 @@ async function callOpenAICompatible(opts: {
       ...(opts.extraHeaders ?? {}),
     },
     body: JSON.stringify(opts.body),
+    signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
   });
   if (!res.ok) {
     const detail = await res.text();
@@ -126,6 +128,38 @@ async function callOpenAICompatible(opts: {
   if (!content.trim()) throw new Error("Réponse vide");
   return cleanReasoning(content);
 }
+
+type Attempt = { provider: "lovable" | "groq" | "openrouter"; model: string };
+
+const OPENROUTER_HEADERS = {
+  "HTTP-Referer": "https://devoiratona.lovable.app",
+  "X-Title": "Devoiratouna",
+};
+
+/**
+ * Cascade de modèles. Les modèles vision de Groq n'existent plus :
+ * toute requête avec image/document passe d'abord par Lovable AI (Gemini),
+ * puis par OpenRouter (Gemini, Grok, GPT).
+ */
+function buildAttempts(opts: { vision: boolean; keys: { lovable?: string; groq?: string; openrouter?: string } }) {
+  const list: Attempt[] = [];
+  const push = (provider: Attempt["provider"], models: string[]) => {
+    if (!opts.keys[provider]) return;
+    for (const model of models) list.push({ provider, model });
+  };
+
+  if (opts.vision) {
+    push("lovable", ["google/gemini-3.7-flash", "google/gemini-2.5-flash"]);
+    push("openrouter", ["google/gemini-2.5-flash", "x-ai/grok-4.3", "openai/gpt-4.1-mini"]);
+    return list;
+  }
+
+  push("groq", ["openai/gpt-oss-120b", "qwen/qwen3.6-27b"]);
+  push("lovable", ["google/gemini-3.7-flash", "google/gemini-2.5-flash"]);
+  push("openrouter", ["deepseek/deepseek-chat-v3.1", "x-ai/grok-4.3", "openai/gpt-4.1-mini"]);
+  return list;
+}
+
 
 export const askTutor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
