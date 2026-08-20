@@ -10,8 +10,12 @@ import { Download, ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/preview/$id")({
   loader: async ({ params }) => {
     // On ne charge JAMAIS source_url côté client : l'aperçu passe par notre proxy.
-    const { data } = await supabase.from("documents")
-      .select("id,title_ar,title_fr,video_url").eq("id", params.id).maybeSingle();
+    const data = await resilientRead(`preview:${params.id}`, () =>
+      unwrap(
+        supabase.from("documents")
+          .select("id,title_ar,title_fr,video_url").eq("id", params.id).maybeSingle(),
+      ),
+    );
     if (!data) throw notFound();
     return data;
   },
