@@ -6,6 +6,7 @@ import { YoutubeEmbed } from "@/components/Media";
 import { PdfCanvasViewer } from "@/components/PdfCanvasViewer";
 import { toYoutubeEmbed } from "@/lib/url-helpers";
 import { AdSlot } from "@/components/AdSlot";
+import { AiTutorPromo } from "@/components/AiTutorPromo";
 import { Download, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/preview/$id")({
