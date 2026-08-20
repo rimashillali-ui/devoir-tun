@@ -8,6 +8,8 @@ import "katex/dist/katex.min.css";
 import { supabase } from "@/integrations/supabase/client";
 import { askTutor } from "@/lib/tutor.functions";
 import { LEVELS } from "@/lib/constants";
+import { readBook, type BookResult, type BookProgress } from "@/lib/pdf-book";
+
 import { subjectsForLevelTrack, subjectLabel, tracksForLevel, trackLabel } from "@/lib/tutor-meta";
 import { BackButton } from "@/components/BackButton";
 import {
@@ -24,6 +26,8 @@ import {
   MessageSquare,
   ImageIcon,
   Cpu,
+  BookOpen,
+
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -49,7 +53,14 @@ export const Route = createFileRoute("/tutor")({
   component: TutorPage,
 });
 
-type Msg = { role: "user" | "assistant"; content: string; images?: string[]; model?: string | null };
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+  images?: string[];
+  model?: string | null;
+  book?: { name: string; pages: number; text: string };
+};
+
 
 /** Nom lisible du modèle affiché sous chaque réponse. */
 function modelLabel(model?: string | null) {
@@ -102,7 +113,13 @@ function Bubble({ m }: { m: Msg }) {
             : "glass border border-white/10 rounded-bl-sm"
         }`}
       >
+        {m.book && (
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-bold">
+            <BookOpen className="h-3.5 w-3.5" /> {m.book.name} · {m.book.pages} page(s)
+          </p>
+        )}
         {m.images && m.images.length > 0 && (
+
           <div className="flex flex-wrap gap-2 mb-2">
             {m.images.map((src, i) => (
               <img key={i} src={src} alt="Pièce jointe" className="h-24 w-24 object-cover rounded-lg" />
@@ -138,6 +155,8 @@ function TutorPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [book, setBook] = useState<BookResult | null>(null);
+  const [reading, setReading] = useState<BookProgress | null>(null);
   const [busy, setBusy] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [convs, setConvs] = useState<Conversation[]>([]);
@@ -145,6 +164,8 @@ function TutorPage() {
   const [loadingConv, setLoadingConv] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const bookRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -207,6 +228,7 @@ function TutorPage() {
     setConvId(null);
     setMessages([]);
     setImages([]);
+    setBook(null);
     setInput("");
   }
 
@@ -225,15 +247,48 @@ function TutorPage() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  /** Lit un livre PDF entier (toutes les pages) avant l'envoi. */
+  async function pickBook(file: File | null) {
+    if (bookRef.current) bookRef.current.value = "";
+    if (!file) return;
+    if (file.size > 60 * 1024 * 1024) {
+      toast.error("Ce PDF dépasse 60 Mo");
+      return;
+    }
+    setReading({ page: 0, total: 0 });
+    try {
+      const result = await readBook(file, (p) => setReading(p));
+      if (!result.text && result.images.length === 0) {
+        toast.error("Impossible de lire ce PDF (aucun texte ni page exploitable).");
+        return;
+      }
+      setBook(result);
+      toast.success(`Livre lu : ${result.pages} page(s)`);
+    } catch {
+      toast.error("Lecture du PDF impossible.");
+    } finally {
+      setReading(null);
+    }
+  }
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
-    if ((!text && images.length === 0) || busy || !level || !userId) return;
-    const userMsg: Msg = { role: "user", content: text, images: images.length ? images : undefined };
+    if ((!text && images.length === 0 && !book) || busy || !level || !userId) return;
+    const bookImages = book?.images ?? [];
+    const allImages = [...images, ...bookImages].slice(0, 12);
+    const userMsg: Msg = {
+      role: "user",
+      content: text,
+      images: allImages.length ? allImages : undefined,
+      book: book ? { name: book.name, pages: book.pages, text: book.text } : undefined,
+    };
     const history = [...messages, userMsg];
     setMessages(history);
     setInput("");
     setImages([]);
+    setBook(null);
+
     setBusy(true);
     const notice = setTimeout(() => setSwitching(true), 6000);
     try {
@@ -244,7 +299,7 @@ function TutorPage() {
           .insert({
             user_id: userId,
             level,
-            title: (text || "Photo d'exercice").slice(0, 60),
+            title: (text || userMsg.book?.name || "Photo d'exercice").slice(0, 60),
           })
           .select("id")
           .single();
@@ -452,6 +507,25 @@ function TutorPage() {
               </div>
 
               <form onSubmit={send} className="glass p-3 space-y-2 sticky bottom-2">
+                {book && (
+                  <div className="flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald/5 px-3 py-2 text-xs">
+                    <BookOpen className="h-4 w-4 text-emerald shrink-0" />
+                    <span className="flex-1 truncate">
+                      <span className="font-bold">{book.name}</span> · {book.pages} page(s)
+                      {book.images.length > 0 && ` · ${book.images.length} page(s) scannée(s) en vision`}
+                      {book.skippedScans > 0 && ` · ${book.skippedScans} page(s) scannée(s) ignorée(s)`}
+                    </span>
+                    <button type="button" aria-label="Retirer le document" onClick={() => setBook(null)}>
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+                {reading && (
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald" /> Lecture du livre… page{" "}
+                    {reading.page}/{reading.total}
+                  </p>
+                )}
                 {images.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {images.map((src, i) => (
@@ -478,6 +552,13 @@ function TutorPage() {
                     className="hidden"
                     onChange={(e) => void pickImages(e.target.files)}
                   />
+                  <input
+                    ref={bookRef}
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="hidden"
+                    onChange={(e) => void pickBook(e.target.files?.[0] ?? null)}
+                  />
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
@@ -485,6 +566,15 @@ function TutorPage() {
                     aria-label="Joindre une image"
                   >
                     <ImagePlus className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => bookRef.current?.click()}
+                    disabled={!!reading}
+                    className="h-11 w-11 rounded-lg border border-white/10 flex items-center justify-center hover:border-emerald/40 disabled:opacity-40"
+                    aria-label="Joindre un livre PDF complet"
+                  >
+                    {reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
                   </button>
                   <textarea
                     value={input}
@@ -501,7 +591,7 @@ function TutorPage() {
                   />
                   <button
                     type="submit"
-                    disabled={busy || (!input.trim() && images.length === 0)}
+                    disabled={busy || !!reading || (!input.trim() && images.length === 0 && !book)}
                     className="bg-cyan text-background font-bold h-11 w-11 rounded-lg flex items-center justify-center disabled:opacity-40"
                     aria-label="Envoyer"
                   >
@@ -509,10 +599,11 @@ function TutorPage() {
                   </button>
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                  <ImageIcon className="h-3 w-3" /> Jusqu'à 3 images (4 Mo max chacune) · l'assistant guide sans
-                  donner la solution finale.
+                  <ImageIcon className="h-3 w-3" /> Jusqu'à 3 images (4 Mo max) ou un livre PDF complet (jusqu'à 60 Mo,
+                  toutes les pages sont lues) · l'assistant guide sans donner la solution finale.
                 </p>
               </form>
+
             </>
           )}
         </div>

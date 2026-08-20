@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type ChatMsg = { role: "user" | "assistant"; content: string; images?: string[] };
+type BookAttachment = { name: string; pages: number; text: string };
+
+type ChatMsg = { role: "user" | "assistant"; content: string; images?: string[]; book?: BookAttachment | null };
 
 export type TutorInput = {
   level: string;
@@ -9,6 +11,7 @@ export type TutorInput = {
   track?: string | null;
   messages: ChatMsg[];
 };
+
 
 const BASE_PROMPT_LEVEL = "__base__";
 
@@ -65,20 +68,35 @@ function cleanReasoning(text: string) {
 
 type ApiMsg = { role: string; content: unknown };
 
+function bookBlock(book: BookAttachment) {
+  return [
+    `Document joint par l'élève : « ${book.name} » (${book.pages} page(s)).`,
+    book.text
+      ? `Contenu intégral extrait du document :\n${book.text}`
+      : "Le document est scanné : son contenu est fourni sous forme d'images de pages.",
+    "Utilise ce document comme source principale. Cite les numéros de page ([Page n]) quand tu t'y réfères.",
+  ].join("\n");
+}
+
 function toApiMessages(messages: ChatMsg[]): ApiMsg[] {
   return messages.map((m) => {
-    if (m.role === "user" && m.images && m.images.length > 0) {
+    const imgs = m.images ?? [];
+    if (m.role === "user" && (imgs.length > 0 || m.book)) {
+      const text = [m.book ? bookBlock(m.book) : "", m.content || (m.book ? "Analyse ce document." : "Analyse cette image.")]
+        .filter(Boolean)
+        .join("\n\n");
       return {
         role: "user",
         content: [
-          { type: "text", text: m.content || "Analyse cette image." },
-          ...m.images.map((url) => ({ type: "image_url", image_url: { url } })),
+          { type: "text", text },
+          ...imgs.map((url) => ({ type: "image_url", image_url: { url } })),
         ],
       };
     }
     return { role: m.role, content: m.content };
   });
 }
+
 
 async function callOpenAICompatible(opts: {
   url: string;
@@ -117,9 +135,18 @@ export const askTutor = createServerFn({ method: "POST" })
       role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
       content: String(m.content ?? "").slice(0, 6000),
       images: Array.isArray(m.images)
-        ? m.images.filter((u) => typeof u === "string" && u.startsWith("data:image/")).slice(0, 3)
+        ? m.images.filter((u) => typeof u === "string" && u.startsWith("data:image/")).slice(0, 12)
         : [],
+      book:
+        m.book && typeof m.book === "object"
+          ? {
+              name: String(m.book.name ?? "document").slice(0, 200),
+              pages: Number.isFinite(m.book.pages) ? Math.max(0, Math.min(5000, Math.trunc(m.book.pages))) : 0,
+              text: String(m.book.text ?? "").slice(0, 240_000),
+            }
+          : null,
     }));
+
     const subject = typeof input.subject === "string" ? input.subject.slice(0, 40) : "";
     const track = typeof input.track === "string" ? input.track.slice(0, 40) : "";
     return { level: input.level, subject, track, messages };
@@ -162,7 +189,11 @@ export const askTutor = createServerFn({ method: "POST" })
     const { data: courseRows } = await coursesQuery.limit(12);
     const courses = (courseRows ?? []).map((c) => `# ${c.title}\n${c.content}`);
 
-    const hasImages = data.messages.some((m) => (m.images?.length ?? 0) > 0);
+    const imageCount = data.messages.reduce((n, m) => n + (m.images?.length ?? 0), 0);
+    const hasImages = imageCount > 0;
+    const bookChars = data.messages.reduce((n, m) => n + (m.book?.text?.length ?? 0), 0);
+    // Un livre entier (ou plusieurs pages scannées) demande un modèle à très grand contexte + vision.
+    const needsLongContext = bookChars > 12_000 || imageCount > 4 || data.messages.some((m) => !!m.book);
     const messages: ApiMsg[] = [
       {
         role: "system",
@@ -180,12 +211,31 @@ export const askTutor = createServerFn({ method: "POST" })
 
     const groqKey = process.env["GROQ_API_KEY"];
     const openrouterKey = process.env["OPENROUTER_API_KEY"];
+    const lovableKey = process.env["LOVABLE_API_KEY"];
+
+    // Tentative 0 : Lovable AI (Gemini) pour les livres complets et l'analyse multi-pages.
+    if (needsLongContext && lovableKey) {
+      for (const model of ["google/gemini-3.7-flash", "google/gemini-2.5-flash"]) {
+        try {
+          const content = await callOpenAICompatible({
+            url: "https://ai.gateway.lovable.dev/v1/chat/completions",
+            key: lovableKey,
+            model,
+            body: { model, messages, temperature: 0.4, max_tokens: 4096 },
+          });
+          return { content, provider: "lovable" as const, model, fellBack: false };
+        } catch (err) {
+          console.error(`[tutor] Lovable AI (${model}) indisponible:`, (err as Error).message);
+        }
+      }
+    }
 
     // Tentative 1 : Groq (modèle vision si l'élève a joint une image)
     const groqModels = hasImages
       ? ["meta-llama/llama-4-scout-17b-16e-instruct", "meta-llama/llama-4-maverick-17b-128e-instruct"]
       : ["deepseek-r1-distill-llama-70b", "openai/gpt-oss-120b"];
     if (groqKey) {
+
       for (const model of groqModels) {
         try {
           const content = await callOpenAICompatible({
