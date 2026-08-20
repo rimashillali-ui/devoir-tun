@@ -138,14 +138,17 @@ export const askTutor = createServerFn({ method: "POST" })
       images: Array.isArray(m.images)
         ? m.images.filter((u) => typeof u === "string" && u.startsWith("data:image/")).slice(0, 12)
         : [],
+      // Pièce jointe élève : document COURT uniquement (les livres complets
+      // sont réservés à l'espace admin « Cours IA »).
       book:
         m.book && typeof m.book === "object"
           ? {
               name: String(m.book.name ?? "document").slice(0, 200),
-              pages: Number.isFinite(m.book.pages) ? Math.max(0, Math.min(5000, Math.trunc(m.book.pages))) : 0,
-              text: String(m.book.text ?? "").slice(0, 240_000),
+              pages: Number.isFinite(m.book.pages) ? Math.max(0, Math.min(20, Math.trunc(m.book.pages))) : 0,
+              text: String(m.book.text ?? "").slice(0, 40_000),
             }
           : null,
+
     }));
 
     const subject = typeof input.subject === "string" ? input.subject.slice(0, 40) : "";
