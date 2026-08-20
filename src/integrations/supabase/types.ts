@@ -389,16 +389,19 @@ export type Database = {
         Row: {
           level: string
           prompt: string
+          subject: string
           updated_at: string
         }
         Insert: {
           level: string
           prompt?: string
+          subject?: string
           updated_at?: string
         }
         Update: {
           level?: string
           prompt?: string
+          subject?: string
           updated_at?: string
         }
         Relationships: []
