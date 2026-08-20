@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { saveSetting } from "@/lib/admin.functions";
 import { toast } from "sonner";
+import { invalidateReads } from "@/lib/resilient-read";
 
 const input = "w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm";
 
@@ -24,7 +25,7 @@ export function SettingsAdmin() {
   }, []);
 
   async function save(key: string, value: any) {
-    try { await saveSetting({ data: { key, value } }); toast.success("Enregistré"); }
+    try { await saveSetting({ data: { key, value } }); invalidateReads(); toast.success("Enregistré"); }
     catch (e: any) { toast.error(e.message); }
   }
 

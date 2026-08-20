@@ -12,6 +12,7 @@ import {
   SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { invalidateReads } from "@/lib/resilient-read";
 
 type Row = { id: string; title_fr: string; title_ar: string; sort_order: number };
 
@@ -66,6 +67,7 @@ export function ReorderPanel() {
     setSaving(true);
     try {
       await reorderDocuments({ data: { items: rows.map((r) => ({ id: r.id, sort_order: r.sort_order })) } });
+      invalidateReads();
       toast.success("Ordre enregistré");
     } catch (e: any) { toast.error(e.message); }
     finally { setSaving(false); }

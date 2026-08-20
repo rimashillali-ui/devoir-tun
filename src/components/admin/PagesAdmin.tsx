@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { savePage } from "@/lib/admin.functions";
 import { toast } from "sonner";
+import { invalidateReads } from "@/lib/resilient-read";
 
 const input = "w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm";
 const PAGES = [
@@ -27,6 +28,7 @@ export function PagesAdmin() {
         slug, title_ar: p.title_ar, title_fr: p.title_fr,
         content_html_ar: p.content_html_ar, content_html_fr: p.content_html_fr,
       } });
+      invalidateReads();
       toast.success("Page enregistrée");
     } catch (e: any) { toast.error(e.message); }
   }

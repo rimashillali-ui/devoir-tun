@@ -4,6 +4,7 @@ import { saveQuizQuestion, deleteQuizQuestion } from "@/lib/quiz-admin.functions
 import { QUIZ_MENU, QUIZ_SUBJECTS } from "@/lib/quizzes";
 import { toast } from "sonner";
 import { Trash2, Plus, Save, X } from "lucide-react";
+import { invalidateReads } from "@/lib/resilient-read";
 
 const input = "w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm";
 const btn = "px-3 py-2 rounded-md text-sm font-medium";
@@ -64,6 +65,7 @@ export function QuizAdmin() {
         explanation_ar: editing.explanation_ar || null,
         sort_order: editing.sort_order,
       }});
+      invalidateReads();
       toast.success("Enregistré");
       setEditing(null);
       load();
@@ -74,6 +76,7 @@ export function QuizAdmin() {
     if (!confirm("Supprimer cette question ?")) return;
     try {
       await deleteQuizQuestion({ data: { id } });
+      invalidateReads();
       toast.success("Supprimé");
       load();
     } catch (e: any) { toast.error(e.message); }
