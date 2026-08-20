@@ -913,6 +913,15 @@ function TutorPage() {
           )}
         </div>
       </div>
+      <AttachmentViewer
+        image={previewImage}
+        doc={previewDoc}
+        onClose={() => {
+          setPreviewImage(null);
+          setPreviewDoc(null);
+        }}
+      />
     </div>
+
   );
 }
