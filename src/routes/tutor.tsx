@@ -624,9 +624,10 @@ function TutorPage() {
                   </button>
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                  <ImageIcon className="h-3 w-3" /> Jusqu'à 3 images (4 Mo max) ou un livre PDF complet (jusqu'à 60 Mo,
-                  toutes les pages sont lues) · l'assistant guide sans donner la solution finale.
+                  <ImageIcon className="h-3 w-3" /> Jusqu'à 3 images (4 Mo max) ou un document court : PDF /
+                  DOCX de {MAX_PAGES} pages maximum (8 Mo) · l'assistant guide sans donner la solution finale.
                 </p>
+
               </form>
 
             </>
