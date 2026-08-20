@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type ChatMsg = { role: "user" | "assistant"; content: string; images?: string[] };
+type BookAttachment = { name: string; pages: number; text: string };
+
+type ChatMsg = { role: "user" | "assistant"; content: string; images?: string[]; book?: BookAttachment | null };
 
 export type TutorInput = {
   level: string;
@@ -9,6 +11,7 @@ export type TutorInput = {
   track?: string | null;
   messages: ChatMsg[];
 };
+
 
 const BASE_PROMPT_LEVEL = "__base__";
 
