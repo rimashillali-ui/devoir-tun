@@ -8,7 +8,15 @@ import "katex/dist/katex.min.css";
 import { supabase } from "@/integrations/supabase/client";
 import { askTutor } from "@/lib/tutor.functions";
 import { LEVELS } from "@/lib/constants";
-import { readBook, type BookResult, type BookProgress } from "@/lib/pdf-book";
+import {
+  readShortDoc,
+  isSupportedDoc,
+  MAX_PAGES,
+  MAX_SIZE_BYTES,
+  type ShortDocResult,
+  type ShortDocProgress,
+} from "@/lib/short-doc";
+
 
 import { subjectsForLevelTrack, subjectLabel, tracksForLevel, trackLabel } from "@/lib/tutor-meta";
 import { BackButton } from "@/components/BackButton";
@@ -26,7 +34,7 @@ import {
   MessageSquare,
   ImageIcon,
   Cpu,
-  BookOpen,
+  FileText,
 
 } from "lucide-react";
 import { toast } from "sonner";
@@ -115,7 +123,7 @@ function Bubble({ m }: { m: Msg }) {
       >
         {m.book && (
           <p className="mb-2 flex items-center gap-1.5 text-xs font-bold">
-            <BookOpen className="h-3.5 w-3.5" /> {m.book.name} · {m.book.pages} page(s)
+            <FileText className="h-3.5 w-3.5" /> {m.book.name} · {m.book.pages} page(s)
           </p>
         )}
         {m.images && m.images.length > 0 && (
@@ -155,8 +163,9 @@ function TutorPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const [book, setBook] = useState<BookResult | null>(null);
-  const [reading, setReading] = useState<BookProgress | null>(null);
+  const [book, setBook] = useState<ShortDocResult | null>(null);
+  const [reading, setReading] = useState<ShortDocProgress | null>(null);
+
   const [busy, setBusy] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [convs, setConvs] = useState<Conversation[]>([]);
@@ -247,29 +256,42 @@ function TutorPage() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  /** Lit un livre PDF entier (toutes les pages) avant l'envoi. */
+  /** Lit un document COURT (PDF de quelques pages ou Word) joint par l'élève. */
   async function pickBook(file: File | null) {
     if (bookRef.current) bookRef.current.value = "";
     if (!file) return;
-    if (file.size > 60 * 1024 * 1024) {
-      toast.error("Ce PDF dépasse 60 Mo");
+    if (!isSupportedDoc(file)) {
+      toast.error("Formats acceptés : PDF, DOCX (ou une photo).");
+      return;
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      toast.error("Ce document dépasse 8 Mo. Envoie un extrait plus court.");
       return;
     }
     setReading({ page: 0, total: 0 });
     try {
-      const result = await readBook(file, (p) => setReading(p));
+      const result = await readShortDoc(file, (p) => setReading(p));
       if (!result.text && result.images.length === 0) {
-        toast.error("Impossible de lire ce PDF (aucun texte ni page exploitable).");
+        toast.error("Impossible de lire ce document (aucun texte exploitable).");
         return;
       }
       setBook(result);
-      toast.success(`Livre lu : ${result.pages} page(s)`);
-    } catch {
-      toast.error("Lecture du PDF impossible.");
+      toast.success(
+        result.truncatedPages > 0
+          ? `Document lu : ${result.pages} premières pages (limite ${MAX_PAGES})`
+          : `Document lu : ${result.pages} page(s)`,
+      );
+    } catch (err) {
+      toast.error(
+        (err as Error).message === "doc-legacy"
+          ? "Les anciens fichiers .doc ne sont pas lisibles : convertis-le en .docx ou en PDF."
+          : "Lecture du document impossible.",
+      );
     } finally {
       setReading(null);
     }
   }
+
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -509,11 +531,11 @@ function TutorPage() {
               <form onSubmit={send} className="glass p-3 space-y-2 sticky bottom-2">
                 {book && (
                   <div className="flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald/5 px-3 py-2 text-xs">
-                    <BookOpen className="h-4 w-4 text-emerald shrink-0" />
+                    <FileText className="h-4 w-4 text-emerald shrink-0" />
                     <span className="flex-1 truncate">
                       <span className="font-bold">{book.name}</span> · {book.pages} page(s)
-                      {book.images.length > 0 && ` · ${book.images.length} page(s) scannée(s) en vision`}
-                      {book.skippedScans > 0 && ` · ${book.skippedScans} page(s) scannée(s) ignorée(s)`}
+                      {book.images.length > 0 && ` · ${book.images.length} page(s) lue(s) en vision`}
+                      {book.truncatedPages > 0 && ` · ${book.truncatedPages} page(s) non lue(s)`}
                     </span>
                     <button type="button" aria-label="Retirer le document" onClick={() => setBook(null)}>
                       <X className="h-3.5 w-3.5" />
@@ -522,10 +544,11 @@ function TutorPage() {
                 )}
                 {reading && (
                   <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald" /> Lecture du livre… page{" "}
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald" /> Lecture du document… page{" "}
                     {reading.page}/{reading.total}
                   </p>
                 )}
+
                 {images.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {images.map((src, i) => (
@@ -555,10 +578,11 @@ function TutorPage() {
                   <input
                     ref={bookRef}
                     type="file"
-                    accept="application/pdf,.pdf"
+                    accept="application/pdf,.pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     className="hidden"
                     onChange={(e) => void pickBook(e.target.files?.[0] ?? null)}
                   />
+
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
@@ -572,10 +596,11 @@ function TutorPage() {
                     onClick={() => bookRef.current?.click()}
                     disabled={!!reading}
                     className="h-11 w-11 rounded-lg border border-white/10 flex items-center justify-center hover:border-emerald/40 disabled:opacity-40"
-                    aria-label="Joindre un livre PDF complet"
+                    aria-label="Joindre un document court (PDF ou Word)"
                   >
-                    {reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+                    {reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
                   </button>
+
                   <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -599,9 +624,10 @@ function TutorPage() {
                   </button>
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                  <ImageIcon className="h-3 w-3" /> Jusqu'à 3 images (4 Mo max) ou un livre PDF complet (jusqu'à 60 Mo,
-                  toutes les pages sont lues) · l'assistant guide sans donner la solution finale.
+                  <ImageIcon className="h-3 w-3" /> Jusqu'à 3 images (4 Mo max) ou un document court : PDF /
+                  DOCX de {MAX_PAGES} pages maximum (8 Mo) · l'assistant guide sans donner la solution finale.
                 </p>
+
               </form>
 
             </>
