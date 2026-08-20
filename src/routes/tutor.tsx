@@ -359,7 +359,7 @@ function TutorPage() {
     clearDraft();
   }
 
-  async function pickImages(files: FileList | null) {
+  async function pickImages(files: FileList | File[] | null) {
     if (!files) return;
     const picked: string[] = [];
     for (const file of Array.from(files).slice(0, 3)) {
