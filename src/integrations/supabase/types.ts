@@ -131,6 +131,7 @@ export type Database = {
           exam_slot: string | null
           id: string
           level: string
+          mirror_urls: string[]
           section: string
           sort_order: number
           source_url: string
@@ -149,6 +150,7 @@ export type Database = {
           exam_slot?: string | null
           id?: string
           level: string
+          mirror_urls?: string[]
           section: string
           sort_order?: number
           source_url: string
@@ -167,6 +169,7 @@ export type Database = {
           exam_slot?: string | null
           id?: string
           level?: string
+          mirror_urls?: string[]
           section?: string
           sort_order?: number
           source_url?: string
@@ -354,6 +357,7 @@ export type Database = {
           created_at: string
           id: string
           image_count: number
+          model: string | null
           role: string
           user_id: string
         }
@@ -363,6 +367,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_count?: number
+          model?: string | null
           role: string
           user_id: string
         }
@@ -372,6 +377,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_count?: number
+          model?: string | null
           role?: string
           user_id?: string
         }
