@@ -163,8 +163,9 @@ function TutorPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const [book, setBook] = useState<BookResult | null>(null);
-  const [reading, setReading] = useState<BookProgress | null>(null);
+  const [book, setBook] = useState<ShortDocResult | null>(null);
+  const [reading, setReading] = useState<ShortDocProgress | null>(null);
+
   const [busy, setBusy] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [convs, setConvs] = useState<Conversation[]>([]);
