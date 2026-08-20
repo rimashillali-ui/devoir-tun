@@ -94,12 +94,51 @@ const LEVEL_DESC: Record<string, string> = {
   bac: "Rigueur de l'examen national",
 };
 
-// Normalise les délimiteurs LaTeX \( \) et \[ \] vers $ ... $ / $$ ... $$
+/**
+ * Normalise le LaTeX renvoyé par les différents modèles pour un rendu KaTeX
+ * fiable : délimiteurs \( \) et \[ \], blocs ```math / ```latex, environnements
+ * nus (align, equation…) et $$ collés au texte.
+ */
 function normalizeMath(text: string) {
-  return text
-    .replace(/\\\[([\s\S]*?)\\\]/g, (_m, x) => `\n$$${x}$$\n`)
-    .replace(/\\\(([\s\S]*?)\\\)/g, (_m, x) => `$${x}$`);
+  let out = text;
+
+  // Blocs de code annoncés comme mathématiques → maths en bloc.
+  out = out.replace(/```(?:math|latex|tex)\s*\n([\s\S]*?)```/gi, (_m, x) => `\n$$\n${String(x).trim()}\n$$\n`);
+
+  // Délimiteurs LaTeX classiques.
+  out = out.replace(/\\\[([\s\S]*?)\\\]/g, (_m, x) => `\n$$\n${String(x).trim()}\n$$\n`);
+  out = out.replace(/\\\(([\s\S]*?)\\\)/g, (_m, x) => `$${String(x).trim()}$`);
+
+  // Environnements mathématiques non entourés de $$.
+  out = out.replace(
+    /(^|\n)[ \t]*(\\begin\{(?:align|align\*|aligned|equation|equation\*|gather|gather\*|cases|array|pmatrix|bmatrix|vmatrix|matrix)\}[\s\S]*?\\end\{[a-z*]+\})/gi,
+    (_m, pre, body) => `${pre}\n$$\n${String(body).trim()}\n$$\n`,
+  );
+
+  // $$ collés au texte → sur leur propre ligne (sinon KaTeX ne détecte rien).
+  out = out.replace(/([^\n$])\$\$/g, "$1\n$$").replace(/\$\$([^\n$])/g, "$$\n$1");
+
+  // Espaces insécables et symboles souvent mal échappés dans les formules.
+  out = out.replace(/\u00a0/g, " ");
+
+  return out;
 }
+
+const KATEX_OPTIONS = {
+  throwOnError: false,
+  strict: false as const,
+  trust: false,
+  output: "htmlAndMathml" as const,
+  macros: {
+    "\\R": "\\mathbb{R}",
+    "\\N": "\\mathbb{N}",
+    "\\Z": "\\mathbb{Z}",
+    "\\Q": "\\mathbb{Q}",
+    "\\C": "\\mathbb{C}",
+    "\\vect": "\\overrightarrow{#1}",
+    "\\diff": "\\mathrm{d}",
+  },
+};
 
 function fileToDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
