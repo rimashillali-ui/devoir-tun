@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Sparkles, UploadCloud, ListChecks } from "lucide-react";
+import { Sparkles, UploadCloud, ListChecks, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { QUIZ_MENU } from "@/lib/quizzes";
