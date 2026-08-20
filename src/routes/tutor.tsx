@@ -215,6 +215,7 @@ function TutorPage() {
     setConvId(null);
     setMessages([]);
     setImages([]);
+    setBook(null);
     setInput("");
   }
 
@@ -233,15 +234,48 @@ function TutorPage() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  /** Lit un livre PDF entier (toutes les pages) avant l'envoi. */
+  async function pickBook(file: File | null) {
+    if (bookRef.current) bookRef.current.value = "";
+    if (!file) return;
+    if (file.size > 60 * 1024 * 1024) {
+      toast.error("Ce PDF dépasse 60 Mo");
+      return;
+    }
+    setReading({ page: 0, total: 0 });
+    try {
+      const result = await readBook(file, (p) => setReading(p));
+      if (!result.text && result.images.length === 0) {
+        toast.error("Impossible de lire ce PDF (aucun texte ni page exploitable).");
+        return;
+      }
+      setBook(result);
+      toast.success(`Livre lu : ${result.pages} page(s)`);
+    } catch {
+      toast.error("Lecture du PDF impossible.");
+    } finally {
+      setReading(null);
+    }
+  }
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
-    if ((!text && images.length === 0) || busy || !level || !userId) return;
-    const userMsg: Msg = { role: "user", content: text, images: images.length ? images : undefined };
+    if ((!text && images.length === 0 && !book) || busy || !level || !userId) return;
+    const bookImages = book?.images ?? [];
+    const allImages = [...images, ...bookImages].slice(0, 12);
+    const userMsg: Msg = {
+      role: "user",
+      content: text,
+      images: allImages.length ? allImages : undefined,
+      book: book ? { name: book.name, pages: book.pages, text: book.text } : undefined,
+    };
     const history = [...messages, userMsg];
     setMessages(history);
     setInput("");
     setImages([]);
+    setBook(null);
+
     setBusy(true);
     const notice = setTimeout(() => setSwitching(true), 6000);
     try {
