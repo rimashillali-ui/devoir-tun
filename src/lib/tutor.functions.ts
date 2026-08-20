@@ -45,8 +45,9 @@ function systemPrompt(opts: {
 }) {
   const courseBlock = opts.courses.length
     ? "Voici le cours officiel tunisien de référence pour répondre à l'élève :\n" +
-      opts.courses.join("\n\n---\n\n").slice(0, 40000)
+      opts.courses.join("\n\n---\n\n").slice(0, 160000)
     : "";
+
   return [
     opts.basePrompt.trim() || DEFAULT_BASE_PROMPT,
     `Niveau de l'élève : ${LEVEL_LABELS[opts.level] ?? opts.level}.`,
