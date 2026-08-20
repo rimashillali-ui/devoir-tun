@@ -6,9 +6,13 @@ import { ARABIC_ONLY_SECTIONS } from "@/lib/constants";
 
 export const Route = createFileRoute("/article/$id")({
   loader: async ({ params }) => {
-    const { data } = await supabase.from("articles")
-      .select("id,section,title_ar,title_fr,content_html_ar,content_html_fr")
-      .eq("id", params.id).maybeSingle();
+    const data = await resilientRead(`article:${params.id}`, () =>
+      unwrap(
+        supabase.from("articles")
+          .select("id,section,title_ar,title_fr,content_html_ar,content_html_fr")
+          .eq("id", params.id).maybeSingle(),
+      ),
+    );
     if (!data) throw notFound();
     return data;
   },
