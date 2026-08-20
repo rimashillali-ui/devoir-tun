@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { extractTextFromFile } from "@/lib/extract-text";
+import { countPages, renderBookPages } from "@/lib/pdf-book";
+import { transcribeBookPages } from "@/lib/tutor-vision.functions";
 import {
   TUTOR_LEVELS,
   LEVEL_LABELS,
@@ -10,8 +13,9 @@ import {
   trackLabel,
 } from "@/lib/tutor-meta";
 import { AdminModal } from "@/components/admin/AdminModal";
-import { BookOpen, Loader2, Plus, Trash2, Upload, Pencil, Eye, EyeOff } from "lucide-react";
+import { BookOpen, Loader2, Plus, Trash2, Upload, Pencil, Eye, EyeOff, ScanEye } from "lucide-react";
 import { toast } from "sonner";
+
 
 type Doc = {
   id: string;
