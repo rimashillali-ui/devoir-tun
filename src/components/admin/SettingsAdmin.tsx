@@ -54,6 +54,24 @@ export function SettingsAdmin() {
         <input className={input} type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
         <button onClick={() => save("contact_email", contactEmail)} className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm">Enregistrer</button>
       </div>
+
+      <div className="glass p-4 space-y-3">
+        <h3 className="font-bold">Formulaire d'envoi de fichiers (Google Forms)</h3>
+        <p className="text-xs text-muted-foreground">
+          Colle ici le lien public de ton Google Form (avec une question « Importer un fichier »). Les fichiers envoyés
+          par les élèves arrivent dans ton Google Drive et les réponses dans ta feuille de réponses. Le formulaire est
+          affiché aux utilisateurs connectés sur la page <span className="font-mono">/upload</span>.
+        </p>
+        <input
+          className={input}
+          type="url"
+          placeholder="https://docs.google.com/forms/d/e/.../viewform"
+          value={uploadForm}
+          onChange={(e) => setUploadForm(e.target.value)}
+        />
+        <button onClick={() => save("upload_form_url", uploadForm.trim())} className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm">Enregistrer</button>
+      </div>
+
     </div>
   );
 }
