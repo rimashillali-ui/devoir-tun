@@ -2,6 +2,7 @@ import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { QUIZZES, QUIZ_MENU, QUIZ_SUBJECTS } from "@/lib/quizzes";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resilientRead, unwrap } from "@/lib/resilient-read";
 
 type DBQuestion = {
   id: string;
@@ -37,13 +38,21 @@ function QuizPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
-    supabase
-      .from("quiz_questions")
-      .select("id,question_ar,choices,correct_index,explanation_ar")
-      .eq("level", level)
-      .eq("subject", subject)
-      .order("sort_order", { ascending: true })
-      .then(({ data }) => setQuestions((data ?? []) as DBQuestion[]));
+    resilientRead(
+      `quiz:${level}:${subject}`,
+      () =>
+        unwrap(
+          supabase
+            .from("quiz_questions")
+            .select("id,question_ar,choices,correct_index,explanation_ar")
+            .eq("level", level)
+            .eq("subject", subject)
+            .order("sort_order", { ascending: true }),
+        ),
+      { ttlMs: 10 * 60_000 },
+    )
+      .then((data) => setQuestions(((data ?? []) as DBQuestion[])))
+      .catch(() => setQuestions([]));
   }, [level, subject]);
 
   if (authed === null || questions === null) return <p className="text-center py-10 text-muted-foreground">…</p>;

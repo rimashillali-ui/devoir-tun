@@ -50,6 +50,22 @@ export const saveDocument = createServerFn({ method: "POST" })
     return { id: row.id };
   });
 
+// Liste complète des documents (avec liens sources) : réservée aux admins.
+// Les colonnes `source_url` / `mirror_urls` ne sont plus lisibles via l'API
+// publique, la lecture passe donc par le client privilégié après vérification.
+export const listDocumentsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("documents")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
 export const deleteDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))

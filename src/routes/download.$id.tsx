@@ -60,11 +60,19 @@ function DownloadPage() {
   const { lang } = useLang();
   const [seconds, setSeconds] = useState(15);
   useEffect(() => {
-    supabase.from("site_settings").select("value_json").eq("key", "countdown_seconds").maybeSingle()
-      .then(({ data }) => {
+    resilientRead(
+      "settings:countdown_seconds",
+      () =>
+        unwrap(
+          supabase.from("site_settings").select("value_json").eq("key", "countdown_seconds").maybeSingle(),
+        ),
+      { ttlMs: 30 * 60_000 },
+    )
+      .then((data: any) => {
         const v = data?.value_json;
         if (typeof v === "number" && v >= 0) setSeconds(v);
-      });
+      })
+      .catch(() => {});
   }, []);
 
   return (

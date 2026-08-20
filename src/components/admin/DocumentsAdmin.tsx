@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
-import { saveDocument, deleteDocument } from "@/lib/admin.functions";
+import { saveDocument, deleteDocument, listDocumentsAdmin } from "@/lib/admin.functions";
 import { generateDocTitle } from "@/lib/title-generator";
 import { invalidateReads } from "@/lib/resilient-read";
 import { toast } from "sonner";
@@ -24,8 +24,12 @@ export function DocumentsAdmin() {
 
 
   async function load() {
-    const { data } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
-    setRows((data ?? []) as Doc[]);
+    try {
+      const data = await listDocumentsAdmin();
+      setRows((data ?? []) as Doc[]);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Chargement impossible");
+    }
   }
   useEffect(() => { load(); }, []);
 

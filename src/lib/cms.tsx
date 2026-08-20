@@ -1,10 +1,18 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
+import { resilientRead, unwrap } from "@/lib/resilient-read";
 
 async function load(slug: string) {
-  const { data } = await supabase.from("pages")
-    .select("slug,title_ar,title_fr,content_html_ar,content_html_fr").eq("slug", slug).maybeSingle();
+  const data = await resilientRead(
+    `page:${slug}`,
+    () =>
+      unwrap(
+        supabase.from("pages")
+          .select("slug,title_ar,title_fr,content_html_ar,content_html_fr").eq("slug", slug).maybeSingle(),
+      ),
+    { ttlMs: 30 * 60_000 },
+  ).catch(() => null);
   if (!data) throw notFound();
   return data;
 }
