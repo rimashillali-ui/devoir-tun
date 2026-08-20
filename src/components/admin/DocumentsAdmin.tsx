@@ -4,7 +4,7 @@ import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Ter
 import { saveDocument, deleteDocument } from "@/lib/admin.functions";
 import { generateDocTitle } from "@/lib/title-generator";
 import { toast } from "sonner";
-import { Trash2, Pencil, Plus, Wand2, ArrowUpDown } from "lucide-react";
+import { Trash2, Pencil, Plus, Wand2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { ReorderPanel } from "./ReorderPanel";
 import { AdminModal } from "./AdminModal";
 
@@ -115,10 +115,27 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
     title_fr: initial.title_fr ?? "",
     subtitle_ar: initial.subtitle_ar ?? "",
     subtitle_fr: initial.subtitle_fr ?? "",
-    source_url: initial.source_url ?? "",
     video_url: initial.video_url ?? "",
     sort_order: initial.sort_order ?? 0,
   });
+  // Ordre des sources défini par l'admin : index 0 = source principale, puis miroirs.
+  const [sources, setSources] = useState<string[]>(() => {
+    const list = [initial.source_url ?? "", ...((initial.mirror_urls as string[] | undefined) ?? [])];
+    while (list.length < 4) list.push("");
+    return list.slice(0, 4);
+  });
+  function setSource(i: number, v: string) {
+    setSources((prev) => prev.map((s, idx) => (idx === i ? v : s)));
+  }
+  function moveSource(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= sources.length) return;
+    setSources((prev) => {
+      const next = [...prev];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  }
   const tracks = getTracks(d.level);
   const subjects = getSubjects(d.level, d.track);
   const slots = d.term ? getExamSlots(d.subject, d.term as Term, d.level) : [];
@@ -147,6 +164,8 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     try {
+      const cleaned = sources.map((s) => s.trim()).filter(Boolean);
+      if (cleaned.length === 0) { toast.error("Ajoute au moins un lien source"); return; }
       const hasTerm = d.section === "devoirs" || d.section === "cours" || d.section === "series";
       await saveDocument({ data: {
         id: d.id,
@@ -161,7 +180,8 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         subtitle_ar: d.subtitle_ar?.trim() || null,
         subtitle_fr: d.subtitle_fr?.trim() || null,
 
-        source_url: d.source_url,
+        source_url: cleaned[0],
+        mirror_urls: cleaned.slice(1),
         video_url: d.section === "cours" && d.video_url ? d.video_url : null,
         sort_order: Number(d.sort_order) || 0,
       } });
@@ -247,9 +267,36 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         </div>
       </div>
 
-      <div>
-        <label className={label}>URL source (GitHub / Drive / OneDrive)</label>
-        <input type="url" className={input} value={d.source_url} onChange={(e) => setD({ ...d, source_url: e.target.value })} required />
+      <div className="space-y-2">
+        <label className={label}>
+          Sources du fichier (GitHub / Google Drive / OneDrive / Backblaze B2 via Worker) — ordre d'essai automatique
+        </label>
+        {sources.map((src, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className={`text-[11px] font-bold px-2 py-1 rounded-md whitespace-nowrap ${i === 0 ? "bg-emerald/20 text-emerald" : "bg-white/10 text-muted-foreground"}`}>
+              {i === 0 ? "1 · principale" : `${i + 1} · miroir`}
+            </span>
+            <input
+              type="url"
+              className={input}
+              value={src}
+              onChange={(e) => setSource(i, e.target.value)}
+              placeholder={i === 0 ? "https://…/fichier.pdf" : "Lien miroir (optionnel)"}
+              {...(i === 0 ? { required: true } : {})}
+            />
+            <button type="button" onClick={() => moveSource(i, -1)} disabled={i === 0}
+              className="p-1.5 rounded-md hover:bg-white/10 disabled:opacity-30" title="Monter">
+              <ArrowUp className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => moveSource(i, 1)} disabled={i === sources.length - 1}
+              className="p-1.5 rounded-md hover:bg-white/10 disabled:opacity-30" title="Descendre">
+              <ArrowDown className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+        <p className="text-[11px] text-muted-foreground">
+          Si une source ne répond pas, la suivante est essayée automatiquement côté serveur (l'élève ne voit rien).
+        </p>
       </div>
       {d.section === "cours" && (
         <div>
