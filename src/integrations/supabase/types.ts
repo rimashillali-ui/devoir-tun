@@ -284,6 +284,42 @@ export type Database = {
         }
         Relationships: []
       }
+      tutor_documents: {
+        Row: {
+          content: string
+          created_at: string
+          enabled: boolean
+          file_name: string | null
+          id: string
+          level: string
+          subject: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          enabled?: boolean
+          file_name?: string | null
+          id?: string
+          level: string
+          subject?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          enabled?: boolean
+          file_name?: string | null
+          id?: string
+          level?: string
+          subject?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
