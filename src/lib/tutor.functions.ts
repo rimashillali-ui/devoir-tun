@@ -189,7 +189,11 @@ export const askTutor = createServerFn({ method: "POST" })
     const { data: courseRows } = await coursesQuery.limit(12);
     const courses = (courseRows ?? []).map((c) => `# ${c.title}\n${c.content}`);
 
-    const hasImages = data.messages.some((m) => (m.images?.length ?? 0) > 0);
+    const imageCount = data.messages.reduce((n, m) => n + (m.images?.length ?? 0), 0);
+    const hasImages = imageCount > 0;
+    const bookChars = data.messages.reduce((n, m) => n + (m.book?.text?.length ?? 0), 0);
+    // Un livre entier (ou plusieurs pages scannées) demande un modèle à très grand contexte + vision.
+    const needsLongContext = bookChars > 12_000 || imageCount > 4 || data.messages.some((m) => !!m.book);
     const messages: ApiMsg[] = [
       {
         role: "system",
@@ -207,12 +211,31 @@ export const askTutor = createServerFn({ method: "POST" })
 
     const groqKey = process.env["GROQ_API_KEY"];
     const openrouterKey = process.env["OPENROUTER_API_KEY"];
+    const lovableKey = process.env["LOVABLE_API_KEY"];
+
+    // Tentative 0 : Lovable AI (Gemini) pour les livres complets et l'analyse multi-pages.
+    if (needsLongContext && lovableKey) {
+      for (const model of ["google/gemini-3.7-flash", "google/gemini-2.5-flash"]) {
+        try {
+          const content = await callOpenAICompatible({
+            url: "https://ai.gateway.lovable.dev/v1/chat/completions",
+            key: lovableKey,
+            model,
+            body: { model, messages, temperature: 0.4, max_tokens: 4096 },
+          });
+          return { content, provider: "lovable" as const, model, fellBack: false };
+        } catch (err) {
+          console.error(`[tutor] Lovable AI (${model}) indisponible:`, (err as Error).message);
+        }
+      }
+    }
 
     // Tentative 1 : Groq (modèle vision si l'élève a joint une image)
     const groqModels = hasImages
       ? ["meta-llama/llama-4-scout-17b-16e-instruct", "meta-llama/llama-4-maverick-17b-128e-instruct"]
       : ["deepseek-r1-distill-llama-70b", "openai/gpt-oss-120b"];
     if (groqKey) {
+
       for (const model of groqModels) {
         try {
           const content = await callOpenAICompatible({
