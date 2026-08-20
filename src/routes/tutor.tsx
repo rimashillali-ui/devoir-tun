@@ -278,7 +278,7 @@ function TutorPage() {
         toast.error(`${file.name} dépasse 4 Mo`);
         continue;
       }
-      picked.push(await fileToDataUrl(file));
+      picked.push(await compressImage(file));
     }
     setImages((prev) => [...prev, ...picked].slice(0, 3));
     if (fileRef.current) fileRef.current.value = "";
