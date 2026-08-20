@@ -123,7 +123,7 @@ function Bubble({ m }: { m: Msg }) {
       >
         {m.book && (
           <p className="mb-2 flex items-center gap-1.5 text-xs font-bold">
-            <BookOpen className="h-3.5 w-3.5" /> {m.book.name} · {m.book.pages} page(s)
+            <FileText className="h-3.5 w-3.5" /> {m.book.name} · {m.book.pages} page(s)
           </p>
         )}
         {m.images && m.images.length > 0 && (
