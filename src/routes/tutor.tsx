@@ -204,8 +204,8 @@ function Bubble({ m }: { m: Msg }) {
         {mine ? (
           <p className="whitespace-pre-wrap">{m.content}</p>
         ) : (
-          <div className="prose prose-sm prose-invert max-w-none prose-p:my-2 prose-headings:mt-3 prose-headings:mb-1 prose-pre:bg-black/40">
-            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+          <div className="tutor-math prose prose-sm prose-invert max-w-none prose-p:my-2 prose-headings:mt-3 prose-headings:mb-1 prose-pre:bg-black/40">
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTIONS]]}>
               {normalizeMath(m.content)}
             </ReactMarkdown>
           </div>
