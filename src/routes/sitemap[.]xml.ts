@@ -6,7 +6,7 @@ import {
   LEVELS,
   getTracks,
   getSubjects,
-  SECTIONS,
+  getSections,
   ARABIC_ONLY_SECTIONS,
   TEXTE_ALLOWED_SUBJECTS,
 } from "@/lib/constants";
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             const subjects = getSubjects(level);
             for (const subject of subjects) {
               entries.push({ path: `/n/${level}/s/${subject}`, changefreq: "weekly", priority: "0.7" });
-              for (const section of SECTIONS) {
+              for (const section of getSections(level, subject)) {
                 if (ARABIC_ONLY_SECTIONS.has(section) && !TEXTE_ALLOWED_SUBJECTS.has(subject)) continue;
                 entries.push({
                   path: `/n/${level}/s/${subject}/${section}`,
@@ -66,7 +66,7 @@ export const Route = createFileRoute("/sitemap.xml")({
                   changefreq: "weekly",
                   priority: "0.6",
                 });
-                for (const section of SECTIONS) {
+                for (const section of getSections(level, subject)) {
                   if (ARABIC_ONLY_SECTIONS.has(section) && !TEXTE_ALLOWED_SUBJECTS.has(subject)) continue;
                   entries.push({
                     path: `/n/${level}/f/${track}/s/${subject}/${section}`,
