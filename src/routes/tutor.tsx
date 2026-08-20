@@ -410,6 +410,18 @@ function TutorPage() {
     }
   }
 
+  /** Glisser-déposer : images -> pièces jointes, PDF/Word -> document court. */
+  async function dropFiles(list: FileList | null) {
+    const files = list ? Array.from(list) : [];
+    if (files.length === 0) return;
+    const imgs = files.filter((f) => f.type.startsWith("image/"));
+    const docs = files.filter((f) => !f.type.startsWith("image/"));
+    if (imgs.length > 0) await pickImages(imgs);
+    if (docs.length > 0) await pickBook(docs[0]);
+  }
+
+
+
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
