@@ -195,7 +195,7 @@ export async function serveDocumentFile(id: string, mode: FileMode) {
           headers: {
             "Content-Type": file.contentType,
             "Content-Disposition": contentDisposition(mode, filename),
-            "Cache-Control": "public, max-age=300",
+            "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
             "X-Robots-Tag": "noindex",
           },
         });
