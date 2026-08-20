@@ -57,7 +57,7 @@ async function renderPageToJpeg(page: any): Promise<string | null> {
 }
 
 async function readDocx(file: File): Promise<string> {
-  const mammoth: any = await import("mammoth/mammoth.browser.js");
+  const mammoth: any = await import(/* @vite-ignore */ "mammoth/mammoth.browser.js" as string);
   const { value } = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
   return String(value ?? "").replace(/[ \t]+/g, " ").trim();
 }
