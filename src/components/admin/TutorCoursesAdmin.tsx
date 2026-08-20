@@ -77,6 +77,7 @@ export function TutorCoursesAdmin() {
 
   function openNew() {
     setForm({ ...empty });
+    setBook(null);
     setOpen(true);
   }
 
@@ -91,8 +92,10 @@ export function TutorCoursesAdmin() {
       content: d.content,
       enabled: d.enabled,
     });
+    setBook(null);
     setOpen(true);
   }
+
 
   async function onFile(file: File | undefined) {
     if (!file) return;
