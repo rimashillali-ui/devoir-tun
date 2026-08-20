@@ -113,7 +113,13 @@ function Bubble({ m }: { m: Msg }) {
             : "glass border border-white/10 rounded-bl-sm"
         }`}
       >
+        {m.book && (
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-bold">
+            <BookOpen className="h-3.5 w-3.5" /> {m.book.name} · {m.book.pages} page(s)
+          </p>
+        )}
         {m.images && m.images.length > 0 && (
+
           <div className="flex flex-wrap gap-2 mb-2">
             {m.images.map((src, i) => (
               <img key={i} src={src} alt="Pièce jointe" className="h-24 w-24 object-cover rounded-lg" />
