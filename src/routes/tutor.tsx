@@ -8,6 +8,7 @@ import "katex/dist/katex.min.css";
 import { supabase } from "@/integrations/supabase/client";
 import { askTutor } from "@/lib/tutor.functions";
 import { LEVELS } from "@/lib/constants";
+import { subjectsForLevel, subjectLabel } from "@/lib/tutor-meta";
 import { BackButton } from "@/components/BackButton";
 import {
   Sparkles,
@@ -119,6 +120,7 @@ function TutorPage() {
   const [authState, setAuthState] = useState<"loading" | "in" | "out">("loading");
   const [userId, setUserId] = useState<string | null>(null);
   const [level, setLevel] = useState<string | null>(null);
+  const [subject, setSubject] = useState<string>("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [images, setImages] = useState<string[]>([]);
@@ -238,7 +240,7 @@ function TutorPage() {
         image_count: userMsg.images?.length ?? 0,
       });
 
-      const res = await run({ data: { level, messages: history } });
+      const res = await run({ data: { level, subject, messages: history } });
       if (res.fellBack) setSwitching(true);
       setMessages([...history, { role: "assistant", content: res.content }]);
 
@@ -351,7 +353,7 @@ function TutorPage() {
                 {LEVELS.map((l) => (
                   <button
                     key={l}
-                    onClick={() => setLevel(l)}
+                    onClick={() => { setLevel(l); setSubject(""); }}
                     className="text-start glass border border-white/10 hover:border-cyan/40 hover:-translate-y-0.5 transition-all p-4 rounded-xl"
                   >
                     <p className="font-bold">{LEVEL_LABELS[l]}</p>
@@ -369,6 +371,19 @@ function TutorPage() {
                 <button onClick={() => setLevel(null)} className="hover:text-foreground underline">
                   changer
                 </button>
+                <select
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  aria-label="Matière"
+                  className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs"
+                >
+                  <option value="">Toutes les matières</option>
+                  {subjectsForLevel(level).map((s) => (
+                    <option key={s} value={s}>
+                      {subjectLabel(s)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="glass p-4 space-y-4 min-h-[45vh] max-h-[60vh] overflow-y-auto">
