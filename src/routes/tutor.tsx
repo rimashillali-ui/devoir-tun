@@ -256,29 +256,42 @@ function TutorPage() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  /** Lit un livre PDF entier (toutes les pages) avant l'envoi. */
+  /** Lit un document COURT (PDF de quelques pages ou Word) joint par l'élève. */
   async function pickBook(file: File | null) {
     if (bookRef.current) bookRef.current.value = "";
     if (!file) return;
-    if (file.size > 60 * 1024 * 1024) {
-      toast.error("Ce PDF dépasse 60 Mo");
+    if (!isSupportedDoc(file)) {
+      toast.error("Formats acceptés : PDF, DOCX (ou une photo).");
+      return;
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      toast.error("Ce document dépasse 8 Mo. Envoie un extrait plus court.");
       return;
     }
     setReading({ page: 0, total: 0 });
     try {
-      const result = await readBook(file, (p) => setReading(p));
+      const result = await readShortDoc(file, (p) => setReading(p));
       if (!result.text && result.images.length === 0) {
-        toast.error("Impossible de lire ce PDF (aucun texte ni page exploitable).");
+        toast.error("Impossible de lire ce document (aucun texte exploitable).");
         return;
       }
       setBook(result);
-      toast.success(`Livre lu : ${result.pages} page(s)`);
-    } catch {
-      toast.error("Lecture du PDF impossible.");
+      toast.success(
+        result.truncatedPages > 0
+          ? `Document lu : ${result.pages} premières pages (limite ${MAX_PAGES})`
+          : `Document lu : ${result.pages} page(s)`,
+      );
+    } catch (err) {
+      toast.error(
+        (err as Error).message === "doc-legacy"
+          ? "Les anciens fichiers .doc ne sont pas lisibles : convertis-le en .docx ou en PDF."
+          : "Lecture du document impossible.",
+      );
     } finally {
       setReading(null);
     }
   }
+
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
