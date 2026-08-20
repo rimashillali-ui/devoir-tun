@@ -48,7 +48,7 @@ export function AccountMenu() {
   return (
     <section>
       <h2 className="text-2xl font-bold mb-4">{lang === "ar" ? "مساحتي" : "Mon espace"}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {items.map((it) => (
           <Link
             key={it.title}
@@ -65,7 +65,25 @@ export function AccountMenu() {
             </div>
           </Link>
         ))}
+        <button
+          type="button"
+          onClick={() =>
+            document.getElementById("levels")?.scrollIntoView({ behavior: "smooth", block: "start" })
+          }
+          className="glass glass-hover p-5 flex items-center gap-3 text-start"
+        >
+          <div className="p-2.5 rounded-lg bg-indigo/10">
+            <GraduationCap className="h-6 w-6 text-indigo" />
+          </div>
+          <div>
+            <div className="font-bold">{lang === "ar" ? "اختر مستواك" : "Choisir un niveau"}</div>
+            <div className="text-sm text-muted-foreground">
+              {lang === "ar" ? "انزل إلى قائمة المستويات" : "Descendre vers les niveaux"}
+            </div>
+          </div>
+        </button>
       </div>
     </section>
   );
+
 }
