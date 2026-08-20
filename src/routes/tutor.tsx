@@ -596,10 +596,11 @@ function TutorPage() {
                     onClick={() => bookRef.current?.click()}
                     disabled={!!reading}
                     className="h-11 w-11 rounded-lg border border-white/10 flex items-center justify-center hover:border-emerald/40 disabled:opacity-40"
-                    aria-label="Joindre un livre PDF complet"
+                    aria-label="Joindre un document court (PDF ou Word)"
                   >
-                    {reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+                    {reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
                   </button>
+
                   <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
