@@ -200,7 +200,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div>
           <label className={label}>Niveau</label>
-          <select className={input} value={d.level} onChange={(e) => setD({ ...d, level: e.target.value, track: null, subject: "" })}>
+          <select className={input} value={d.level} onChange={(e) => setD({ ...d, level: e.target.value, track: null, subject: "", section: getDocumentSections(e.target.value).includes(d.section) ? d.section : "cours" })}>
             {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
