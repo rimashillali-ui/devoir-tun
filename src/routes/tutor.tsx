@@ -24,6 +24,8 @@ import {
   MessageSquare,
   ImageIcon,
   Cpu,
+  BookOpen,
+
 } from "lucide-react";
 import { toast } from "sonner";
 
