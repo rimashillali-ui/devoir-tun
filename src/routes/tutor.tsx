@@ -422,26 +422,56 @@ function TutorPage() {
     <div className="max-w-6xl mx-auto space-y-4">
       <BackButton to="/" />
 
-      <header className="glass p-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl bg-cyan/10 border border-cyan/20 flex items-center justify-center">
+      <header className="glass p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl bg-cyan/10 border border-cyan/20 flex items-center justify-center">
             <Sparkles className="h-5 w-5 text-cyan" />
           </div>
-          <div>
-            <h1 className="text-xl font-black">Tuteur IA — tous les niveaux</h1>
-            <p className="text-xs text-muted-foreground">Programme tunisien · explications pas à pas</p>
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-xl font-black truncate">Tuteur IA — tous les niveaux</h1>
+            <p className="text-[11px] sm:text-xs text-muted-foreground">Programme tunisien · explications pas à pas</p>
           </div>
         </div>
         <button
           onClick={newChat}
-          className="flex items-center gap-1.5 text-xs font-bold border border-white/10 rounded-lg px-3 py-2 hover:border-cyan/40"
+          className="flex items-center gap-1.5 text-xs font-bold border border-white/10 rounded-lg px-3 py-2 hover:border-cyan/40 shrink-0"
         >
-          <Plus className="h-3.5 w-3.5" /> Nouvelle discussion
+          <Plus className="h-3.5 w-3.5" /> <span className="hidden xs:inline sm:inline">Nouvelle discussion</span>
+          <span className="sm:hidden xs:hidden">Nouveau</span>
         </button>
       </header>
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-4">
-        <aside className="glass p-3 space-y-2 lg:max-h-[70vh] overflow-y-auto order-2 lg:order-1">
+        <details className="glass p-3 lg:hidden order-2">
+          <summary className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 cursor-pointer">
+            <MessageSquare className="h-3.5 w-3.5" /> Mon historique ({convs.length})
+          </summary>
+          <div className="mt-2 space-y-2 max-h-[40dvh] overflow-y-auto">
+            {convs.length === 0 && <p className="text-xs text-muted-foreground px-1">Aucune discussion enregistrée.</p>}
+            {convs.map((c) => (
+              <div
+                key={c.id}
+                className={`flex items-center gap-1 rounded-lg border px-2 py-2 text-xs ${
+                  convId === c.id ? "border-cyan/40 bg-cyan/5" : "border-white/10"
+                }`}
+              >
+                <button onClick={() => void openConv(c)} className="flex-1 text-start truncate min-w-0">
+                  <span className="block truncate font-medium">{c.title}</span>
+                  <span className="text-[10px] text-muted-foreground">{LEVEL_LABELS[c.level] ?? c.level}</span>
+                </button>
+                <button
+                  onClick={() => void removeConv(c.id)}
+                  aria-label="Supprimer"
+                  className="p-1 rounded text-muted-foreground hover:text-rose-400"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </details>
+
+        <aside className="glass p-3 space-y-2 lg:max-h-[70vh] overflow-y-auto order-2 lg:order-1 hidden lg:block">
           <p className="text-xs font-bold text-muted-foreground px-1 flex items-center gap-1.5">
             <MessageSquare className="h-3.5 w-3.5" /> Mon historique
           </p>
@@ -490,7 +520,7 @@ function TutorPage() {
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1">
                   Niveau : {LEVEL_LABELS[level] ?? level}
                 </span>
@@ -527,7 +557,7 @@ function TutorPage() {
                 </select>
               </div>
 
-              <div className="glass p-4 space-y-4 min-h-[45vh] max-h-[60vh] overflow-y-auto">
+              <div className="glass p-3 sm:p-4 space-y-4 min-h-[50dvh] max-h-[58dvh] sm:min-h-[45vh] sm:max-h-[60vh] overflow-y-auto overflow-x-hidden overscroll-contain">
                 {loadingConv && <Loader2 className="h-4 w-4 animate-spin text-cyan mx-auto" />}
                 {!loadingConv && messages.length === 0 && (
                   <div className="text-center text-sm text-muted-foreground py-10 space-y-2">
@@ -594,7 +624,7 @@ function TutorPage() {
                     ))}
                   </div>
                 )}
-                <div className="flex items-end gap-2">
+                <div className="flex items-end gap-1.5 sm:gap-2">
                   <input
                     ref={fileRef}
                     type="file"
@@ -614,7 +644,7 @@ function TutorPage() {
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
-                    className="h-11 w-11 rounded-lg border border-white/10 flex items-center justify-center hover:border-cyan/40"
+                    className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-lg border border-white/10 flex items-center justify-center hover:border-cyan/40"
                     aria-label="Joindre une image"
                   >
                     <ImagePlus className="h-4 w-4" />
@@ -623,7 +653,7 @@ function TutorPage() {
                     type="button"
                     onClick={() => bookRef.current?.click()}
                     disabled={!!reading}
-                    className="h-11 w-11 rounded-lg border border-white/10 flex items-center justify-center hover:border-emerald/40 disabled:opacity-40"
+                    className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-lg border border-white/10 flex items-center justify-center hover:border-emerald/40 disabled:opacity-40"
                     aria-label="Joindre un document court (PDF ou Word)"
                   >
                     {reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
@@ -638,14 +668,14 @@ function TutorPage() {
                         void send(e as unknown as React.FormEvent);
                       }
                     }}
-                    rows={2}
+                    rows={1}
                     placeholder="Écris ta question…"
-                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-cyan/50 resize-none"
+                    className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-base sm:text-sm outline-none focus:border-cyan/50 resize-none max-h-32 sm:rows-2"
                   />
                   <button
                     type="submit"
                     disabled={busy || !!reading || (!input.trim() && images.length === 0 && !book)}
-                    className="bg-cyan text-background font-bold h-11 w-11 rounded-lg flex items-center justify-center disabled:opacity-40"
+                    className="bg-cyan text-background font-bold h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-lg flex items-center justify-center disabled:opacity-40"
                     aria-label="Envoyer"
                   >
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
