@@ -292,10 +292,13 @@ export const askTutor = createServerFn({ method: "POST" })
       ...toApiMessages(data.messages),
     ];
 
-    const keys = {
+    const keys: Keys = {
       groq: process.env["GROQ_API_KEY"],
       openrouter: process.env["OPENROUTER_API_KEY"],
       lovable: process.env["LOVABLE_API_KEY"],
+      cerebras: process.env["CEREBRAS_API_KEY"],
+      together: process.env["TOGETHER_API_KEY"],
+      deepinfra: process.env["DEEPINFRA_API_KEY"],
     };
 
     // Toute image / document joint => cascade vision (Gemini d'abord).
@@ -303,19 +306,14 @@ export const askTutor = createServerFn({ method: "POST" })
     const attempts = buildAttempts({ vision, keys });
     if (attempts.length === 0) throw new Error("Service IA indisponible pour le moment.");
 
-    const endpoints = {
-      lovable: "https://ai.gateway.lovable.dev/v1/chat/completions",
-      groq: "https://api.groq.com/openai/v1/chat/completions",
-      openrouter: "https://openrouter.ai/api/v1/chat/completions",
-    } as const;
-
     let lastError = "";
+    const blocked = new Set<Provider>();
     for (const [index, attempt] of attempts.entries()) {
       const key = keys[attempt.provider];
-      if (!key) continue;
+      if (!key || blocked.has(attempt.provider)) continue;
       try {
         const content = await callOpenAICompatible({
-          url: endpoints[attempt.provider],
+          url: ENDPOINTS[attempt.provider],
           key,
           model: attempt.model,
           body: {
@@ -330,6 +328,9 @@ export const askTutor = createServerFn({ method: "POST" })
         return { content, provider: attempt.provider, model: attempt.model, fellBack: index > 0 };
       } catch (err) {
         lastError = (err as Error).message;
+        // Quota (429) ou panne (5xx) : ce fournisseur est saturé, on saute
+        // ses autres modèles et on bascule sur le suivant de la cascade.
+        if (isQuotaOrServerError(lastError)) blocked.add(attempt.provider);
         console.error(`[tutor] ${attempt.provider} (${attempt.model}) indisponible:`, lastError);
       }
     }
