@@ -531,11 +531,11 @@ function TutorPage() {
               <form onSubmit={send} className="glass p-3 space-y-2 sticky bottom-2">
                 {book && (
                   <div className="flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald/5 px-3 py-2 text-xs">
-                    <BookOpen className="h-4 w-4 text-emerald shrink-0" />
+                    <FileText className="h-4 w-4 text-emerald shrink-0" />
                     <span className="flex-1 truncate">
                       <span className="font-bold">{book.name}</span> · {book.pages} page(s)
-                      {book.images.length > 0 && ` · ${book.images.length} page(s) scannée(s) en vision`}
-                      {book.skippedScans > 0 && ` · ${book.skippedScans} page(s) scannée(s) ignorée(s)`}
+                      {book.images.length > 0 && ` · ${book.images.length} page(s) lue(s) en vision`}
+                      {book.truncatedPages > 0 && ` · ${book.truncatedPages} page(s) non lue(s)`}
                     </span>
                     <button type="button" aria-label="Retirer le document" onClick={() => setBook(null)}>
                       <X className="h-3.5 w-3.5" />
@@ -544,10 +544,11 @@ function TutorPage() {
                 )}
                 {reading && (
                   <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald" /> Lecture du livre… page{" "}
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald" /> Lecture du document… page{" "}
                     {reading.page}/{reading.total}
                   </p>
                 )}
+
                 {images.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {images.map((src, i) => (
