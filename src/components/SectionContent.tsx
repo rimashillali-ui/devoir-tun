@@ -34,31 +34,45 @@ export function SectionContent({
   const [articles, setArticles] = useState<Article[] | null>(null);
 
   useEffect(() => {
-    if (isArticle) {
-      let q = supabase.from("articles").select("id,title_ar,title_fr,subtitle_ar,subtitle_fr")
-        .eq("section", section).order("created_at", { ascending: false });
+    let cancelled = false;
+    const scope = `${level}|${track ?? ""}|${subject}|${section}`;
 
-      if (level) q = q.eq("level", level);
-      if (track) q = q.eq("track", track); else q = q.is("track", null);
-      if (subject) q = q.eq("subject", subject);
-      q.then(({ data }) => setArticles((data ?? []) as Article[]));
+    if (isArticle) {
+      resilientRead(`articles:${scope}`, () => {
+        let q = supabase.from("articles").select("id,title_ar,title_fr,subtitle_ar,subtitle_fr")
+          .eq("section", section).order("created_at", { ascending: false });
+        if (level) q = q.eq("level", level);
+        if (track) q = q.eq("track", track); else q = q.is("track", null);
+        if (subject) q = q.eq("subject", subject);
+        return unwrap(q);
+      })
+        .then((data) => { if (!cancelled) setArticles((data ?? []) as Article[]); })
+        .catch(() => { if (!cancelled) setArticles([]); });
     } else {
-      let q = supabase.from("documents").select("id,title_ar,title_fr,subtitle_ar,subtitle_fr,video_url,term,exam_slot,sort_order")
-        .eq("level", level).eq("subject", subject).eq("section", section)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false });
-      if (track) q = q.eq("track", track); else q = q.is("track", null);
       const sortLang = arabicOnly ? "ar" : lang;
       const manualOrder = section === "cours" || section === "series" || section === "texte";
-      q.then(({ data }) => {
-        const list = (data ?? []) as Doc[];
-        if (!manualOrder) {
-          list.sort((a, b) => sortKey(a, sortLang).localeCompare(sortKey(b, sortLang), undefined, { numeric: true, sensitivity: "base" }));
-        }
-        setDocs(list);
-      });
+      resilientRead(`documents:${scope}`, () => {
+        let q = supabase.from("documents").select("id,title_ar,title_fr,subtitle_ar,subtitle_fr,video_url,term,exam_slot,sort_order")
+          .eq("level", level).eq("subject", subject).eq("section", section)
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: false });
+        if (track) q = q.eq("track", track); else q = q.is("track", null);
+        return unwrap(q);
+      })
+        .then((data) => {
+          if (cancelled) return;
+          const list = [...((data ?? []) as Doc[])];
+          if (!manualOrder) {
+            list.sort((a, b) => sortKey(a, sortLang).localeCompare(sortKey(b, sortLang), undefined, { numeric: true, sensitivity: "base" }));
+          }
+          setDocs(list);
+        })
+        .catch(() => { if (!cancelled) setDocs([]); });
     }
+
+    return () => { cancelled = true; };
   }, [level, track, subject, section, isArticle, arabicOnly, lang]);
+
 
   const dir = arabicOnly ? "rtl" : undefined;
   const useLang2 = arabicOnly ? "ar" : lang;
