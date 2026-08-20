@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n";
 import { LEVELS, LEVEL_ACCENT } from "@/lib/constants";
+import { AccountMenu } from "@/components/AccountMenu";
+import { UploadCloud } from "lucide-react";
 import { GraduationCap, BookOpen, FlaskConical, Calculator, Award } from "lucide-react";
 
 export const Route = createFileRoute("/")({
