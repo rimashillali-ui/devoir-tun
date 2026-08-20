@@ -185,6 +185,7 @@ export function TutorCoursesAdmin() {
               <p className="font-bold text-sm">{d.title}</p>
               <p className="text-xs text-muted-foreground">
                 {LEVEL_LABELS[d.level] ?? d.level} ·{" "}
+                {d.track ? trackLabel(d.track) : "toutes filières"} ·{" "}
                 {d.subject ? subjectLabel(d.subject) : "toutes les matières"} · {d.content.length} car.
                 {d.file_name ? ` · ${d.file_name}` : ""}
               </p>
@@ -213,17 +214,35 @@ export function TutorCoursesAdmin() {
       {open && (
         <AdminModal title={form.id ? "Modifier le cours IA" : "Nouveau cours IA"} onClose={() => setOpen(false)}>
           <div className="space-y-3">
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="grid sm:grid-cols-3 gap-3">
               <label className="text-sm space-y-1">
                 <span className="text-xs text-muted-foreground">Niveau</span>
                 <select
                   value={form.level}
-                  onChange={(e) => setForm({ ...form, level: e.target.value, subject: "" })}
+                  onChange={(e) => setForm({ ...form, level: e.target.value, track: "", subject: "" })}
                   className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm"
                 >
                   {TUTOR_LEVELS.map((l) => (
                     <option key={l} value={l}>
                       {LEVEL_LABELS[l] ?? l}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm space-y-1">
+                <span className="text-xs text-muted-foreground">Filière</span>
+                <select
+                  value={form.track}
+                  onChange={(e) => setForm({ ...form, track: e.target.value, subject: "" })}
+                  disabled={tracks.length === 0}
+                  className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm disabled:opacity-40"
+                >
+                  <option value="">
+                    {tracks.length === 0 ? "Pas de filière" : "Toutes les filières"}
+                  </option>
+                  {tracks.map((tr) => (
+                    <option key={tr} value={tr}>
+                      {trackLabel(tr)}
                     </option>
                   ))}
                 </select>
