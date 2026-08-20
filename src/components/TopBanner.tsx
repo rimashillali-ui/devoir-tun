@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
+import { resilientRead, unwrap } from "@/lib/resilient-read";
 
 export function TopBanner() {
   const { lang } = useLang();
   const [banner, setBanner] = useState<{ enabled: boolean; text_ar?: string; text_fr?: string } | null>(null);
   useEffect(() => {
-    supabase.from("site_settings").select("value_json").eq("key", "banner").maybeSingle()
-      .then(({ data }) => setBanner((data?.value_json as any) ?? null));
+    resilientRead(
+      "settings:banner",
+      () => unwrap(supabase.from("site_settings").select("value_json").eq("key", "banner").maybeSingle()),
+      { ttlMs: 10 * 60_000 },
+    )
+      .then((data: any) => setBanner((data?.value_json as any) ?? null))
+      .catch(() => setBanner(null));
   }, []);
   if (!banner?.enabled) return null;
   const text = lang === "ar" ? banner.text_ar : banner.text_fr;

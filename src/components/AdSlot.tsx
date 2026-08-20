@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { AdSlot as AdSlotName } from "@/lib/constants";
+import { resilientRead, unwrap } from "@/lib/resilient-read";
 
 type Ad = {
   slot: string;
@@ -14,13 +15,21 @@ type Ad = {
 export function AdSlot({ slot, className }: { slot: AdSlotName; className?: string }) {
   const [ad, setAd] = useState<Ad | null>(null);
   useEffect(() => {
-    supabase
-      .from("ads")
-      .select("slot,provider,code_html,image_url,link_url,enabled")
-      .eq("slot", slot)
-      .eq("enabled", true)
-      .maybeSingle()
-      .then(({ data }) => setAd(data as Ad | null));
+    resilientRead(
+      `ads:${slot}`,
+      () =>
+        unwrap(
+          supabase
+            .from("ads")
+            .select("slot,provider,code_html,image_url,link_url,enabled")
+            .eq("slot", slot)
+            .eq("enabled", true)
+            .maybeSingle(),
+        ),
+      { ttlMs: 10 * 60_000 },
+    )
+      .then((data) => setAd((data as Ad | null) ?? null))
+      .catch(() => setAd(null));
   }, [slot]);
 
   if (!ad) return null;
