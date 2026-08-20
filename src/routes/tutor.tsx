@@ -188,8 +188,55 @@ async function compressImage(file: File) {
 }
 
 
+/** Visionneuse plein écran : image agrandie ou texte du document joint. */
+function AttachmentViewer({
+  image,
+  doc,
+  onClose,
+}: {
+  image?: string | null;
+  doc?: { name: string; pages: number; text: string } | null;
+  onClose: () => void;
+}) {
+  if (!image && !doc) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm p-3 sm:p-6"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <button
+        type="button"
+        aria-label="Fermer"
+        onClick={onClose}
+        className="absolute top-3 end-3 rounded-full border border-white/20 bg-background/80 p-2"
+      >
+        <X className="h-4 w-4" />
+      </button>
+      <div className="max-h-full w-full max-w-3xl overflow-auto" onClick={(e) => e.stopPropagation()}>
+        {image && (
+          <img src={image} alt="Pièce jointe agrandie" className="mx-auto max-h-[85vh] w-auto rounded-lg" />
+        )}
+        {doc && (
+          <div className="glass rounded-xl border border-white/10 p-4">
+            <p className="mb-3 flex items-center gap-2 text-sm font-bold">
+              <FileText className="h-4 w-4 text-emerald" /> {doc.name} · {doc.pages} page(s)
+            </p>
+            <pre className="max-h-[70vh] overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+              {doc.text || "Aucun texte extrait de ce document."}
+            </pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Bubble({ m }: { m: Msg }) {
   const mine = m.role === "user";
+  const [zoom, setZoom] = useState<string | null>(null);
+  const [showDoc, setShowDoc] = useState(false);
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
       <div
@@ -200,15 +247,24 @@ function Bubble({ m }: { m: Msg }) {
         }`}
       >
         {m.book && (
-          <p className="mb-2 flex items-center gap-1.5 text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setShowDoc(true)}
+            className="mb-2 flex items-center gap-1.5 text-xs font-bold underline decoration-dotted"
+          >
             <FileText className="h-3.5 w-3.5" /> {m.book.name} · {m.book.pages} page(s)
-          </p>
+          </button>
         )}
         {m.images && m.images.length > 0 && (
-
           <div className="flex flex-wrap gap-2 mb-2">
             {m.images.map((src, i) => (
-              <img key={i} src={src} alt="Pièce jointe" className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-lg" />
+              <button key={i} type="button" onClick={() => setZoom(src)} aria-label="Agrandir la pièce jointe">
+                <img
+                  src={src}
+                  alt="Pièce jointe"
+                  className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-lg cursor-zoom-in"
+                />
+              </button>
             ))}
           </div>
         )}
@@ -227,9 +283,18 @@ function Bubble({ m }: { m: Msg }) {
           </p>
         )}
       </div>
+      <AttachmentViewer
+        image={zoom}
+        doc={showDoc ? m.book ?? null : null}
+        onClose={() => {
+          setZoom(null);
+          setShowDoc(false);
+        }}
+      />
     </div>
   );
 }
+
 
 function TutorPage() {
   const run = useServerFn(askTutor);
@@ -243,6 +308,9 @@ function TutorPage() {
   const [images, setImages] = useState<string[]>([]);
   const [book, setBook] = useState<ShortDocResult | null>(null);
   const [reading, setReading] = useState<ShortDocProgress | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<{ name: string; pages: number; text: string } | null>(null);
+
 
   const [busy, setBusy] = useState(false);
   const [switching, setSwitching] = useState(false);
@@ -736,11 +804,15 @@ function TutorPage() {
                 {book && (
                   <div className="flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald/5 px-3 py-2 text-xs">
                     <FileText className="h-4 w-4 text-emerald shrink-0" />
-                    <span className="flex-1 truncate">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDoc({ name: book.name, pages: book.pages, text: book.text })}
+                      className="flex-1 truncate text-start underline decoration-dotted"
+                    >
                       <span className="font-bold">{book.name}</span> · {book.pages} page(s)
                       {book.images.length > 0 && ` · ${book.images.length} page(s) lue(s) en vision`}
                       {book.truncatedPages > 0 && ` · ${book.truncatedPages} page(s) non lue(s)`}
-                    </span>
+                    </button>
                     <button type="button" aria-label="Retirer le document" onClick={() => setBook(null)}>
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -757,7 +829,10 @@ function TutorPage() {
                   <div className="flex flex-wrap gap-2">
                     {images.map((src, i) => (
                       <div key={i} className="relative">
-                        <img src={src} alt="À envoyer" className="h-16 w-16 object-cover rounded-lg" />
+                        <button type="button" onClick={() => setPreviewImage(src)} aria-label="Agrandir l'image">
+                          <img src={src} alt="À envoyer" className="h-16 w-16 object-cover rounded-lg cursor-zoom-in" />
+                        </button>
+
                         <button
                           type="button"
                           aria-label="Retirer l'image"
@@ -838,6 +913,15 @@ function TutorPage() {
           )}
         </div>
       </div>
+      <AttachmentViewer
+        image={previewImage}
+        doc={previewDoc}
+        onClose={() => {
+          setPreviewImage(null);
+          setPreviewDoc(null);
+        }}
+      />
     </div>
+
   );
 }
