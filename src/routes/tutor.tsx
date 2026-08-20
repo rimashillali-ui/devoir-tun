@@ -575,6 +575,9 @@ function TutorPage() {
           <p className="text-xs font-bold text-muted-foreground px-1 flex items-center gap-1.5">
             <MessageSquare className="h-3.5 w-3.5" /> Mon historique
           </p>
+          <p className="px-1 text-[10px] text-muted-foreground">
+            Conservé {TUTOR_RETENTION_DAYS} jours, puis supprimé automatiquement.
+          </p>
           {convs.length === 0 && <p className="text-xs text-muted-foreground px-1">Aucune discussion enregistrée.</p>}
           {convs.map((c) => (
             <div
