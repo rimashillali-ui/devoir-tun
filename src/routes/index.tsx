@@ -75,7 +75,7 @@ function Home() {
 
 
 
-      <section>
+      <section id="levels" className="scroll-mt-24">
         <h2 className="text-2xl font-bold mb-2">{t.levels_title}</h2>
         <p className="text-muted-foreground mb-6">{t.levels_subtitle}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
