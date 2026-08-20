@@ -9,6 +9,7 @@ export function SettingsAdmin() {
   const [countdown, setCountdown] = useState(15);
   const [banner, setBanner] = useState<{ enabled: boolean; text_ar: string; text_fr: string }>({ enabled: false, text_ar: "", text_fr: "" });
   const [contactEmail, setContactEmail] = useState("");
+  const [uploadForm, setUploadForm] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -17,6 +18,7 @@ export function SettingsAdmin() {
         if (row.key === "countdown_seconds") setCountdown(Number(row.value_json) || 15);
         if (row.key === "banner") setBanner({ enabled: false, text_ar: "", text_fr: "", ...(row.value_json as any) });
         if (row.key === "contact_email") setContactEmail(String(row.value_json ?? ""));
+        if (row.key === "upload_form_url") setUploadForm(String(row.value_json ?? ""));
       }
     })();
   }, []);
@@ -54,6 +56,24 @@ export function SettingsAdmin() {
         <input className={input} type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
         <button onClick={() => save("contact_email", contactEmail)} className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm">Enregistrer</button>
       </div>
+
+      <div className="glass p-4 space-y-3">
+        <h3 className="font-bold">Formulaire d'envoi de fichiers (Google Forms)</h3>
+        <p className="text-xs text-muted-foreground">
+          Colle ici le lien public de ton Google Form (avec une question « Importer un fichier »). Les fichiers envoyés
+          par les élèves arrivent dans ton Google Drive et les réponses dans ta feuille de réponses. Le formulaire est
+          affiché aux utilisateurs connectés sur la page <span className="font-mono">/upload</span>.
+        </p>
+        <input
+          className={input}
+          type="url"
+          placeholder="https://docs.google.com/forms/d/e/.../viewform"
+          value={uploadForm}
+          onChange={(e) => setUploadForm(e.target.value)}
+        />
+        <button onClick={() => save("upload_form_url", uploadForm.trim())} className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm">Enregistrer</button>
+      </div>
+
     </div>
   );
 }
