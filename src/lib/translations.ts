@@ -160,7 +160,11 @@ export const translations = {
       devoirs: "Devoirs corrigés",
       texte: "شرح نص",
       conseils: "Conseils",
+      bac_blanc: "Bac blanc",
+      concours_blanc: "Concours blanc",
+      revision: "Révision",
     } as Record<string, string>,
+
     terms: { T1: "Trimestre 1", T2: "Trimestre 2", T3: "Trimestre 3" } as Record<string, string>,
   },
 };
