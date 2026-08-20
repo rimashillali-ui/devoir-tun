@@ -293,7 +293,7 @@ function TutorPage() {
           .insert({
             user_id: userId,
             level,
-            title: (text || "Photo d'exercice").slice(0, 60),
+            title: (text || userMsg.book?.name || "Photo d'exercice").slice(0, 60),
           })
           .select("id")
           .single();
