@@ -223,7 +223,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         <div>
           <label className={label}>Section</label>
           <select className={input} value={d.section} onChange={(e) => setD({ ...d, section: e.target.value })}>
-            {SECTIONS.filter((s) => s !== "texte" && s !== "conseils").map((s) => <option key={s} value={s}>{s}</option>)}
+            {getDocumentSections(d.level).map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
       </div>
