@@ -135,9 +135,18 @@ export const askTutor = createServerFn({ method: "POST" })
       role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
       content: String(m.content ?? "").slice(0, 6000),
       images: Array.isArray(m.images)
-        ? m.images.filter((u) => typeof u === "string" && u.startsWith("data:image/")).slice(0, 3)
+        ? m.images.filter((u) => typeof u === "string" && u.startsWith("data:image/")).slice(0, 12)
         : [],
+      book:
+        m.book && typeof m.book === "object"
+          ? {
+              name: String(m.book.name ?? "document").slice(0, 200),
+              pages: Number.isFinite(m.book.pages) ? Math.max(0, Math.min(5000, Math.trunc(m.book.pages))) : 0,
+              text: String(m.book.text ?? "").slice(0, 240_000),
+            }
+          : null,
     }));
+
     const subject = typeof input.subject === "string" ? input.subject.slice(0, 40) : "";
     const track = typeof input.track === "string" ? input.track.slice(0, 40) : "";
     return { level: input.level, subject, track, messages };
