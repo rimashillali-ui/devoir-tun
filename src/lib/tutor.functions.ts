@@ -194,7 +194,10 @@ export const askTutor = createServerFn({ method: "POST" })
     const hasImages = imageCount > 0;
     const bookChars = data.messages.reduce((n, m) => n + (m.book?.text?.length ?? 0), 0);
     // Un livre entier (ou plusieurs pages scannées) demande un modèle à très grand contexte + vision.
-    const needsLongContext = bookChars > 12_000 || imageCount > 4 || data.messages.some((m) => !!m.book);
+    const courseChars = courses.reduce((n, c) => n + c.length, 0);
+    const needsLongContext =
+      bookChars > 12_000 || imageCount > 4 || courseChars > 30_000 || data.messages.some((m) => !!m.book);
+
     const messages: ApiMsg[] = [
       {
         role: "system",
