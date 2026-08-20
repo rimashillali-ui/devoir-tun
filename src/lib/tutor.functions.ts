@@ -250,69 +250,49 @@ export const askTutor = createServerFn({ method: "POST" })
       ...toApiMessages(data.messages),
     ];
 
-    const groqKey = process.env["GROQ_API_KEY"];
-    const openrouterKey = process.env["OPENROUTER_API_KEY"];
-    const lovableKey = process.env["LOVABLE_API_KEY"];
+    const keys = {
+      groq: process.env["GROQ_API_KEY"],
+      openrouter: process.env["OPENROUTER_API_KEY"],
+      lovable: process.env["LOVABLE_API_KEY"],
+    };
 
-    // Tentative 0 : Lovable AI (Gemini) pour les livres complets et l'analyse multi-pages.
-    if (needsLongContext && lovableKey) {
-      for (const model of ["google/gemini-3.7-flash", "google/gemini-2.5-flash"]) {
-        try {
-          const content = await callOpenAICompatible({
-            url: "https://ai.gateway.lovable.dev/v1/chat/completions",
-            key: lovableKey,
-            model,
-            body: { model, messages, temperature: 0.4, max_tokens: 4096 },
-          });
-          return { content, provider: "lovable" as const, model, fellBack: false };
-        } catch (err) {
-          console.error(`[tutor] Lovable AI (${model}) indisponible:`, (err as Error).message);
-        }
+    // Toute image / document joint => cascade vision (Gemini d'abord).
+    const vision = hasImages || needsLongContext;
+    const attempts = buildAttempts({ vision, keys });
+    if (attempts.length === 0) throw new Error("Service IA indisponible pour le moment.");
+
+    const endpoints = {
+      lovable: "https://ai.gateway.lovable.dev/v1/chat/completions",
+      groq: "https://api.groq.com/openai/v1/chat/completions",
+      openrouter: "https://openrouter.ai/api/v1/chat/completions",
+    } as const;
+
+    let lastError = "";
+    for (const [index, attempt] of attempts.entries()) {
+      const key = keys[attempt.provider];
+      if (!key) continue;
+      try {
+        const content = await callOpenAICompatible({
+          url: endpoints[attempt.provider],
+          key,
+          model: attempt.model,
+          body: {
+            model: attempt.model,
+            messages,
+            temperature: 0.4,
+            max_tokens: vision ? 4096 : 2048,
+          },
+          ...(attempt.provider === "openrouter" ? { extraHeaders: OPENROUTER_HEADERS } : {}),
+          timeoutMs: vision ? 75_000 : 45_000,
+        });
+        return { content, provider: attempt.provider, model: attempt.model, fellBack: index > 0 };
+      } catch (err) {
+        lastError = (err as Error).message;
+        console.error(`[tutor] ${attempt.provider} (${attempt.model}) indisponible:`, lastError);
       }
     }
 
-    // Tentative 1 : Groq (modèle vision si l'élève a joint une image)
-    const groqModels = hasImages
-      ? ["meta-llama/llama-4-scout-17b-16e-instruct", "meta-llama/llama-4-maverick-17b-128e-instruct"]
-      : ["deepseek-r1-distill-llama-70b", "openai/gpt-oss-120b"];
-    if (groqKey) {
-
-      for (const model of groqModels) {
-        try {
-          const content = await callOpenAICompatible({
-            url: "https://api.groq.com/openai/v1/chat/completions",
-            key: groqKey,
-            model,
-            body: { model, messages, temperature: 0.4, max_tokens: 2048 },
-          });
-          return { content, provider: "groq" as const, model, fellBack: false };
-        } catch (err) {
-          console.error(`[tutor] Groq (${model}) indisponible:`, (err as Error).message);
-        }
-      }
-    }
-
-    // Tentative 2 : secours automatique OpenRouter (même historique)
-    if (!openrouterKey) throw new Error("Service IA indisponible pour le moment. Réessayez dans un instant.");
-    try {
-      const content = await callOpenAICompatible({
-        url: "https://openrouter.ai/api/v1/chat/completions",
-        key: openrouterKey,
-        model: "openrouter/free",
-        body: {
-          model: "openrouter/free",
-          messages,
-          temperature: 0.4,
-          max_tokens: 2048,
-        },
-        extraHeaders: {
-          "HTTP-Referer": "https://devoiratona.lovable.app",
-          "X-Title": "Devoiratouna",
-        },
-      });
-      return { content, provider: "openrouter" as const, model: "openrouter/free", fellBack: true };
-    } catch (err) {
-      console.error("[tutor] OpenRouter en échec:", (err as Error).message);
-      throw new Error("L'assistant est momentanément surchargé. Réessayez dans quelques instants.");
-    }
+    console.error("[tutor] tous les modèles ont échoué:", lastError);
+    throw new Error("L'assistant est momentanément surchargé. Réessayez dans quelques instants.");
   });
+
