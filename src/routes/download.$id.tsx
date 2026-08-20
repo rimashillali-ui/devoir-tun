@@ -1,14 +1,18 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resilientRead, unwrap } from "@/lib/resilient-read";
 import { useLang, pickTitle } from "@/lib/i18n";
 import { AdSlot } from "@/components/AdSlot";
 import { DownloadCountdown } from "@/components/DownloadCountdown";
 
 export const Route = createFileRoute("/download/$id")({
   loader: async ({ params }) => {
-    const { data } = await supabase.from("documents")
-      .select("id,title_ar,title_fr").eq("id", params.id).maybeSingle();
+    const data = await resilientRead(`download:${params.id}`, () =>
+      unwrap(
+        supabase.from("documents").select("id,title_ar,title_fr").eq("id", params.id).maybeSingle(),
+      ),
+    );
     if (!data) throw notFound();
     return data;
   },

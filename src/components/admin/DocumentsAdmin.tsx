@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LEVELS, getTracks, getSubjects, SECTIONS, TERMS, getExamSlots, type Term } from "@/lib/constants";
 import { saveDocument, deleteDocument } from "@/lib/admin.functions";
 import { generateDocTitle } from "@/lib/title-generator";
+import { invalidateReads } from "@/lib/resilient-read";
 import { toast } from "sonner";
 import { Trash2, Pencil, Plus, Wand2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { ReorderPanel } from "./ReorderPanel";
@@ -30,7 +31,7 @@ export function DocumentsAdmin() {
 
   async function onDelete(id: string) {
     if (!confirm("Supprimer ce document ?")) return;
-    try { await deleteDocument({ data: { id } }); toast.success("Supprimé"); load(); }
+    try { await deleteDocument({ data: { id } }); invalidateReads(); toast.success("Supprimé"); load(); }
     catch (e: any) { toast.error(e.message); }
   }
 
@@ -185,7 +186,7 @@ function DocForm({ initial, onClose, onSaved }: { initial: any; onClose: () => v
         video_url: d.section === "cours" && d.video_url ? d.video_url : null,
         sort_order: Number(d.sort_order) || 0,
       } });
-      toast.success("Enregistré"); onSaved();
+      invalidateReads(); toast.success("Enregistré"); onSaved();
     } catch (err: any) { toast.error(err.message); }
   }
 

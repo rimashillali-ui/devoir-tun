@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LEVELS, getTracks, getSubjects, ARTICLE_SECTIONS, ARABIC_ONLY_SECTIONS } from "@/lib/constants";
 import { saveArticle, deleteArticle } from "@/lib/admin.functions";
+import { invalidateReads } from "@/lib/resilient-read";
 import { toast } from "sonner";
 import { Trash2, Pencil, Plus } from "lucide-react";
 import { AdminModal } from "./AdminModal";
@@ -21,7 +22,7 @@ export function ArticlesAdmin() {
 
   async function onDelete(id: string) {
     if (!confirm("Supprimer ?")) return;
-    try { await deleteArticle({ data: { id } }); toast.success("Supprimé"); load(); } catch (e: any) { toast.error(e.message); }
+    try { await deleteArticle({ data: { id } }); invalidateReads(); toast.success("Supprimé"); load(); } catch (e: any) { toast.error(e.message); }
   }
 
   return (
@@ -89,7 +90,7 @@ function ArticleForm({ initial, onClose, onSaved }: { initial: any; onClose: () 
         content_html_ar: a.content_html_ar,
         content_html_fr: frDisabled ? null : (a.content_html_fr || null),
       } });
-      toast.success("Enregistré"); onSaved();
+      invalidateReads(); toast.success("Enregistré"); onSaved();
     } catch (err: any) { toast.error(err.message); }
   }
 
