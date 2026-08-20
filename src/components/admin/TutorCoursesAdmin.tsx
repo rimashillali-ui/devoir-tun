@@ -48,6 +48,11 @@ export function TutorCoursesAdmin() {
   const [extracting, setExtracting] = useState(false);
   const [filterLevel, setFilterLevel] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [book, setBook] = useState<{ file: File; pages: number } | null>(null);
+  const [range, setRange] = useState({ from: 1, to: 20 });
+  const [vision, setVision] = useState<{ running: boolean; label: string }>({ running: false, label: "" });
+  const transcribe = useServerFn(transcribeBookPages);
+
 
   async function load() {
     const { data, error } = await supabase
