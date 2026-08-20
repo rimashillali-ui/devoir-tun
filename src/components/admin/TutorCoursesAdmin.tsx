@@ -350,6 +350,55 @@ export function TutorCoursesAdmin() {
               </span>
             </div>
 
+            {book && (
+              <div className="glass p-3 space-y-2">
+                <p className="text-sm font-bold flex items-center gap-2">
+                  <ScanEye className="h-4 w-4 text-cyan" /> Lecture par vision — {book.pages} page(s)
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  L'IA lit les pages comme des images (utile pour les livres scannés ou quand l'extraction de
+                  texte est incomplète). Traite par tranches de 60 pages maximum ; le résultat s'ajoute au
+                  contenu ci-dessous.
+                </p>
+                <div className="flex flex-wrap items-end gap-2">
+                  <label className="text-sm space-y-1">
+                    <span className="text-xs text-muted-foreground block">De la page</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={book.pages}
+                      value={range.from}
+                      onChange={(e) => setRange((r) => ({ ...r, from: Number(e.target.value) }))}
+                      className="w-24 bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <label className="text-sm space-y-1">
+                    <span className="text-xs text-muted-foreground block">à la page</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={book.pages}
+                      value={range.to}
+                      onChange={(e) => setRange((r) => ({ ...r, to: Number(e.target.value) }))}
+                      className="w-24 bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => void runVision()}
+                    disabled={vision.running}
+                    className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-bold disabled:opacity-50"
+                  >
+                    {vision.running ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanEye className="h-4 w-4" />}
+                    Lire par vision
+                  </button>
+                  {vision.running && <span className="text-xs text-muted-foreground">{vision.label}</span>}
+                </div>
+              </div>
+            )}
+
+
+
             <label className="text-sm space-y-1 block">
               <span className="text-xs text-muted-foreground">Contenu du cours (texte de référence)</span>
               <textarea
