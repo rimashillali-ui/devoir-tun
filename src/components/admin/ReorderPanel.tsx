@@ -95,7 +95,7 @@ export function ReorderPanel() {
           </select></div>
         <div><label className={label}>Section</label>
           <select className={input + " w-full"} value={section} onChange={(e) => { setSection(e.target.value); setTerm(""); setExamSlot(""); }}>
-            {SECTIONS.filter((s) => s !== "texte" && s !== "conseils").map((s) => <option key={s} value={s}>{s}</option>)}
+            {getDocumentSections(level).map((s: string) => <option key={s} value={s}>{s}</option>)}
           </select></div>
         {needsTerm && (
           <div><label className={label}>Trimestre</label>
