@@ -6,6 +6,7 @@ import { YoutubeEmbed } from "@/components/Media";
 import { PdfCanvasViewer } from "@/components/PdfCanvasViewer";
 import { toYoutubeEmbed } from "@/lib/url-helpers";
 import { AdSlot } from "@/components/AdSlot";
+import { AiTutorPromo } from "@/components/AiTutorPromo";
 import { Download, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/preview/$id")({
@@ -46,6 +47,8 @@ function PreviewPage() {
           <Download className="h-4 w-4" /> {t.download}
         </Link>
       </div>
+
+      <AiTutorPromo />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px] gap-4">
         <div className="space-y-4">

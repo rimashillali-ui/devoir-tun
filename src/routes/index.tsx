@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n";
 import { LEVELS, LEVEL_ACCENT } from "@/lib/constants";
+import { AccountMenu } from "@/components/AccountMenu";
+import { UploadCloud } from "lucide-react";
 import { GraduationCap, BookOpen, FlaskConical, Calculator, Award } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -26,7 +28,7 @@ const ICONS: Record<string, any> = {
 };
 
 function Home() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   return (
     <div className="space-y-12">
       <section className="rounded-2xl overflow-hidden border border-white/10 shadow-lg">
@@ -46,6 +48,29 @@ function Home() {
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">{t.tagline}</p>
       </section>
+
+      <AccountMenu />
+
+      <section className="glass p-5 flex flex-col sm:flex-row sm:items-center gap-3 border border-emerald/20">
+        <div className="p-2.5 rounded-lg bg-emerald/10 shrink-0 self-start">
+          <UploadCloud className="h-6 w-6 text-emerald" />
+        </div>
+        <div className="flex-1">
+          <h2 className="font-bold text-lg">
+            {lang === "ar" ? "لديك درس أو فرض غير موجود هنا؟" : "Un cours ou un devoir manquant ?"}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {lang === "ar"
+              ? "اطلب إضافة ملف: أرسل لنا وثيقتك وسننشرها لفائدة كل التلاميذ."
+              : "Demande un upload : envoie-nous ton document, nous le publierons pour tous les élèves."}
+          </p>
+        </div>
+        <Link to="/upload" className="bg-emerald text-background font-bold px-4 py-2 rounded-md text-center shrink-0">
+          {lang === "ar" ? "طلب إضافة ملف" : "Demander un upload"}
+        </Link>
+      </section>
+
+
 
       <section>
         <h2 className="text-2xl font-bold mb-2">{t.levels_title}</h2>
