@@ -147,7 +147,7 @@ export const askTutor = createServerFn({ method: "POST" })
             model,
             body: { model, messages, temperature: 0.4, max_tokens: 2048 },
           });
-          return { content, provider: "groq" as const, fellBack: false };
+          return { content, provider: "groq" as const, model, fellBack: false };
         } catch (err) {
           console.error(`[tutor] Groq (${model}) indisponible:`, (err as Error).message);
         }
@@ -172,7 +172,7 @@ export const askTutor = createServerFn({ method: "POST" })
           "X-Title": "Devoiratouna",
         },
       });
-      return { content, provider: "openrouter" as const, fellBack: true };
+      return { content, provider: "openrouter" as const, model: "openrouter/free", fellBack: true };
     } catch (err) {
       console.error("[tutor] OpenRouter en échec:", (err as Error).message);
       throw new Error("L'assistant est momentanément surchargé. Réessayez dans quelques instants.");

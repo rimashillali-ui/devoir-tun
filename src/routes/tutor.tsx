@@ -23,6 +23,7 @@ import {
   Trash2,
   MessageSquare,
   ImageIcon,
+  Cpu,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,7 +49,14 @@ export const Route = createFileRoute("/tutor")({
   component: TutorPage,
 });
 
-type Msg = { role: "user" | "assistant"; content: string; images?: string[] };
+type Msg = { role: "user" | "assistant"; content: string; images?: string[]; model?: string | null };
+
+/** Nom lisible du modèle affiché sous chaque réponse. */
+function modelLabel(model?: string | null) {
+  if (!model) return null;
+  const short = model.split("/").pop() ?? model;
+  return short.replace(/-instruct$/i, "");
+}
 type Conversation = { id: string; title: string; level: string; updated_at: string };
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -110,6 +118,11 @@ function Bubble({ m }: { m: Msg }) {
             </ReactMarkdown>
           </div>
         )}
+        {!mine && modelLabel(m.model) && (
+          <p className="mt-2 pt-2 border-t border-white/10 text-[11px] text-muted-foreground flex items-center gap-1">
+            <Cpu className="h-3 w-3" /> Modèle : {modelLabel(m.model)}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -167,10 +180,16 @@ function TutorPage() {
     setLevel(c.level);
     const { data } = await supabase
       .from("tutor_messages")
-      .select("role, content")
+      .select("role, content, model")
       .eq("conversation_id", c.id)
       .order("created_at", { ascending: true });
-    setMessages((data ?? []).map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content })));
+    setMessages(
+      (data ?? []).map((m) => ({
+        role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
+        content: m.content,
+        model: m.model,
+      })),
+    );
     setLoadingConv(false);
   }
 
@@ -242,13 +261,14 @@ function TutorPage() {
 
       const res = await run({ data: { level, subject, messages: history } });
       if (res.fellBack) setSwitching(true);
-      setMessages([...history, { role: "assistant", content: res.content }]);
+      setMessages([...history, { role: "assistant", content: res.content, model: res.model }]);
 
       await supabase.from("tutor_messages").insert({
         conversation_id: cid,
         user_id: userId,
         role: "assistant",
         content: res.content,
+        model: res.model,
       });
       await supabase
         .from("tutor_conversations")
