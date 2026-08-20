@@ -158,11 +158,11 @@ async function fetchCandidate(url: string, depth = 0): Promise<{ buffer: ArrayBu
 
 async function getDocument(id: string) {
   if (!UUID_RE.test(id)) return null;
-  // Lecture serveur uniquement : la colonne source_url n'est plus lisible par les visiteurs.
+  // Lecture serveur uniquement : les URLs sources ne sont plus lisibles par les visiteurs.
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("documents")
-    .select("source_url,title_fr,title_ar")
+    .select("source_url,mirror_urls,title_fr,title_ar")
     .eq("id", id)
     .maybeSingle();
 
@@ -170,39 +170,48 @@ async function getDocument(id: string) {
   return data;
 }
 
+/** Candidats pour une source donnée, selon le mode demandé. */
+function candidatesForSource(source: string, mode: FileMode) {
+  if (isMicrosoftUrl(source)) return microsoftCandidates(source);
+  return isDirectFileUrl(source)
+    ? unique(mode === "download" ? [toDownloadUrl(source), toRawUrl(source)] : [toRawUrl(source), toDownloadUrl(source)])
+    : [toDownloadUrl(source)];
+}
+
 export async function serveDocumentFile(id: string, mode: FileMode) {
   const doc = await getDocument(id);
   if (!doc) return new Response("Document introuvable", { status: 404 });
 
-  const source = doc.source_url;
-  if (isMicrosoftUrl(source)) {
-    return Response.redirect(mode === "preview" ? microsoftPreviewUrl(source) : microsoftDownloadUrl(source), 302);
-  }
+  // Ordre défini par l'administrateur : source principale puis miroirs.
+  const sources = unique([doc.source_url, ...((doc.mirror_urls as string[] | null) ?? [])]);
 
-  // Fichier direct : on récupère le brut pour l'aperçu, la variante ?download pour le téléchargement.
-  const candidates = isDirectFileUrl(source)
-    ? unique(mode === "download" ? [toDownloadUrl(source), toRawUrl(source)] : [toRawUrl(source), toDownloadUrl(source)])
-    : [toDownloadUrl(source)];
-
-  for (const candidate of candidates) {
-    try {
-      const file = await fetchCandidate(candidate);
-      if (!file) continue;
-      const filename = filenameFromTitle(doc.title_fr ?? doc.title_ar);
-      return new Response(file.buffer, {
-        headers: {
-          "Content-Type": file.contentType,
-          "Content-Disposition": contentDisposition(mode, filename),
-          "Cache-Control": "public, max-age=300",
-          "X-Robots-Tag": "noindex",
-        },
-      });
-    } catch {
-      // Essaie le candidat suivant.
+  for (const source of sources) {
+    for (const candidate of candidatesForSource(source, mode)) {
+      try {
+        const file = await fetchCandidate(candidate);
+        if (!file) continue;
+        const filename = filenameFromTitle(doc.title_fr ?? doc.title_ar);
+        return new Response(file.buffer, {
+          headers: {
+            "Content-Type": file.contentType,
+            "Content-Disposition": contentDisposition(mode, filename),
+            "Cache-Control": "public, max-age=300",
+            "X-Robots-Tag": "noindex",
+          },
+        });
+      } catch {
+        // Essaie le candidat / miroir suivant.
+      }
     }
   }
 
-  return new Response("Impossible de charger ce fichier. Vérifiez que le lien SharePoint/OneDrive est public.", {
+  // Dernier recours : redirection vers un partage Microsoft (souvent non téléchargeable en direct).
+  const msSource = sources.find((s) => isMicrosoftUrl(s));
+  if (msSource) {
+    return Response.redirect(mode === "preview" ? microsoftPreviewUrl(msSource) : microsoftDownloadUrl(msSource), 302);
+  }
+
+  return new Response("Impossible de charger ce fichier. Vérifiez que les liens sources sont publics.", {
     status: 502,
     headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex" },
   });
