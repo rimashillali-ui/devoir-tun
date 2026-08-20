@@ -8,7 +8,15 @@ import "katex/dist/katex.min.css";
 import { supabase } from "@/integrations/supabase/client";
 import { askTutor } from "@/lib/tutor.functions";
 import { LEVELS } from "@/lib/constants";
-import { readBook, type BookResult, type BookProgress } from "@/lib/pdf-book";
+import {
+  readShortDoc,
+  isSupportedDoc,
+  MAX_PAGES,
+  MAX_SIZE_BYTES,
+  type ShortDocResult,
+  type ShortDocProgress,
+} from "@/lib/short-doc";
+
 
 import { subjectsForLevelTrack, subjectLabel, tracksForLevel, trackLabel } from "@/lib/tutor-meta";
 import { BackButton } from "@/components/BackButton";
