@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, GraduationCap } from "lucide-react";
+import { Menu, GraduationCap, UploadCloud } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { QUIZ_MENU, QUIZ_SUBJECTS } from "@/lib/quizzes";
 import { useLang } from "@/lib/i18n";
@@ -22,6 +22,14 @@ export function UserSidebar() {
           </SheetTitle>
         </SheetHeader>
         <div className="mt-6 space-y-4">
+          <Link
+            to="/upload"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-md bg-white/5 hover:bg-white/10 text-sm font-semibold"
+          >
+            <UploadCloud className="h-4 w-4 text-cyan" />
+            {lang === "ar" ? "إرسال ملف" : "Envoyer un document"}
+          </Link>
           <div>
             <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
               {lang === "ar" ? "الاختبارات" : "Quiz"}

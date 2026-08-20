@@ -9,6 +9,7 @@ export function SettingsAdmin() {
   const [countdown, setCountdown] = useState(15);
   const [banner, setBanner] = useState<{ enabled: boolean; text_ar: string; text_fr: string }>({ enabled: false, text_ar: "", text_fr: "" });
   const [contactEmail, setContactEmail] = useState("");
+  const [uploadForm, setUploadForm] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -17,6 +18,7 @@ export function SettingsAdmin() {
         if (row.key === "countdown_seconds") setCountdown(Number(row.value_json) || 15);
         if (row.key === "banner") setBanner({ enabled: false, text_ar: "", text_fr: "", ...(row.value_json as any) });
         if (row.key === "contact_email") setContactEmail(String(row.value_json ?? ""));
+        if (row.key === "upload_form_url") setUploadForm(String(row.value_json ?? ""));
       }
     })();
   }, []);
