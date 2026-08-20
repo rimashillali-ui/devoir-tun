@@ -133,3 +133,18 @@ html[dir="rtl"] body { font-family: var(--font-arabic); }
 @layer base {
   * { border-color: var(--border); }
 }
+
+/* Rendu LaTeX du chat IA : formules lisibles et scrollables sur mobile */
+.tutor-math .katex { font-size: 1.05em; }
+.tutor-math .katex-display {
+  margin: 0.9rem 0;
+  padding: 0.35rem 0.15rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+.tutor-math .katex-display > .katex { text-align: center; white-space: nowrap; }
+.tutor-math .katex-html { direction: ltr; }
+.tutor-math :where(p, li) .katex { white-space: nowrap; }
+.tutor-math .katex-error { color: var(--destructive, #f43f5e); white-space: pre-wrap; }
+.tutor-math table { display: block; overflow-x: auto; max-width: 100%; }
