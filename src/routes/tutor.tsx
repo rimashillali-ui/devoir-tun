@@ -110,6 +110,34 @@ function fileToDataUrl(file: File) {
   });
 }
 
+/** Réduit la photo (max 1400 px, JPEG) pour un envoi rapide et fiable à l'IA. */
+async function compressImage(file: File) {
+  const dataUrl = await fileToDataUrl(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("image"));
+      el.src = dataUrl;
+    });
+    const max = 1400;
+    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * scale));
+    const h = Math.max(1, Math.round(img.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return dataUrl;
+    ctx.drawImage(img, 0, 0, w, h);
+    const out = canvas.toDataURL("image/jpeg", 0.82);
+    return out.length < dataUrl.length ? out : dataUrl;
+  } catch {
+    return dataUrl;
+  }
+}
+
+
 function Bubble({ m }: { m: Msg }) {
   const mine = m.role === "user";
   return (
@@ -250,7 +278,7 @@ function TutorPage() {
         toast.error(`${file.name} dépasse 4 Mo`);
         continue;
       }
-      picked.push(await fileToDataUrl(file));
+      picked.push(await compressImage(file));
     }
     setImages((prev) => [...prev, ...picked].slice(0, 3));
     if (fileRef.current) fileRef.current.value = "";
